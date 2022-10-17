@@ -25,7 +25,7 @@ pub mod prelude {
     pub use crate::cooldown::{Cooldown, CooldownState};
 
     pub use crate::plugin::AbilityPlugin;
-    pub use crate::{AbilitiesBundle, Abilitylike};
+    pub use crate::{AbilitiesBundle, AbilityState, Abilitylike};
 }
 
 /// Allows a type to be used as a gameplay action in an input-agnostic fashion

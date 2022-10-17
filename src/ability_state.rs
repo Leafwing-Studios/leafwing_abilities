@@ -33,6 +33,18 @@ impl<A: Abilitylike> AbilityStateItem<'_, A> {
         action.ready(&*self.charges, &*self.cooldowns)
     }
 
+    /// Is this ability both ready and pressed?
+    #[inline]
+    pub fn ready_and_pressed(&mut self, action: A) -> bool {
+        self.action_state.pressed(action.clone()) && self.ready(action)
+    }
+
+    /// Is this ability both ready and just pressed?
+    #[inline]
+    pub fn ready_and_just_pressed(&mut self, action: A) -> bool {
+        self.action_state.just_pressed(action.clone()) && self.ready(action)
+    }
+
     /// Triggers this ability, depleting a charge if available.
     ///
     /// Calls [`Abilitylike::trigger`] on the specified action.
