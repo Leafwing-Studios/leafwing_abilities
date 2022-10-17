@@ -3,48 +3,25 @@
 #![warn(clippy::doc_markdown)]
 #![doc = include_str!("../README.md")]
 
-use crate::action_state::ActionState;
 use crate::cooldown::Cooldowns;
-use crate::input_map::InputMap;
 use bevy::ecs::prelude::*;
 use charges::{ChargeState, Charges};
 use cooldown::Cooldown;
+use leafwing_input_manager::Actionlike;
 use std::marker::PhantomData;
 
-pub mod action_state;
-pub mod axislike;
-pub mod buttonlike;
 pub mod charges;
-pub mod clashing_inputs;
 pub mod cooldown;
-mod display_impl;
-pub mod errors;
-pub mod input_map;
-pub mod input_mocking;
-pub mod input_streams;
-pub mod orientation;
 pub mod plugin;
 pub mod systems;
-pub mod user_input;
-
-// Importing the derive macro
-pub use leafwing_input_manager_macros::Actionlike;
 
 /// Everything you need to get started
 pub mod prelude {
-    pub use crate::action_state::{ActionState, ActionStateDriver};
-    pub use crate::axislike::{DualAxis, MouseWheelAxisType, SingleAxis, VirtualDPad};
-    pub use crate::buttonlike::MouseWheelDirection;
     pub use crate::charges::{ChargeState, Charges};
-    pub use crate::clashing_inputs::ClashStrategy;
     pub use crate::cooldown::{Cooldown, Cooldowns};
-    pub use crate::input_map::InputMap;
-    pub use crate::input_mocking::MockInput;
-    pub use crate::user_input::{Modifier, UserInput};
 
-    pub use crate::plugin::InputManagerPlugin;
-    pub use crate::plugin::ToggleActions;
-    pub use crate::{Actionlike, InputManagerBundle};
+    pub use crate::plugin::AbilityPlugin;
+    pub use crate::{Abilitylike, HasAbilitiesBundle};
 }
 
 /// Allows a type to be used as a gameplay action in an input-agnostic fashion
@@ -78,27 +55,11 @@ pub mod prelude {
 ///    Ultimate,
 /// }
 /// ```
-pub trait Actionlike: Send + Sync + Clone + 'static {
-    /// The number of variants of this action type
-    const N_VARIANTS: usize;
-
-    /// Iterates over the possible actions in the order they were defined
-    fn variants() -> ActionIter<Self> {
-        ActionIter::default()
-    }
-
-    /// Returns the default value for the action stored at the provided index if it exists
+pub trait Abilitylike: Actionlike {
+    /// Is this ability ready?
     ///
-    /// This is mostly used internally, to enable space-efficient iteration.
-    fn get_at(index: usize) -> Option<Self>;
-
-    /// Returns the position in the defining enum of the given action
-    fn index(&self) -> usize;
-
-    /// Is this `action` ready?
-    ///
-    /// If this action has charges, at least one charge must be available.
-    /// If this action has a cooldown but no charges, the cooldown must be ready.
+    /// If this ability has charges, at least one charge must be available.
+    /// If this ability has a cooldown but no charges, the cooldown must be ready.
     /// Otherwise, returns `true`.
     ///
     /// Calls [`action_ready`], which can be used manually if you already know the [`Charges`] and [`Cooldown`] of interest.
@@ -109,10 +70,10 @@ pub trait Actionlike: Send + Sync + Clone + 'static {
         action_ready(charges, cooldowns)
     }
 
-    /// Triggers this action, depleting a charge if available.
+    /// Triggers this ability, depleting a charge if available.
     ///
-    /// Returns `true` if the action could be used, and `false` if it could not be.
-    /// Actions can only be used if they are ready.
+    /// Returns `true` if the ability could be used, and `false` if it could not be.
+    /// Abilities can only be used if they are ready.
     ///     
     /// Calls [`trigger_action`], which can be used manually if you already know the [`Charges`] and [`Cooldown`] of interest.
     fn trigger(
@@ -200,15 +161,11 @@ impl<A: Actionlike> Default for ActionIter<A> {
     }
 }
 
-/// This [`Bundle`] allows entities to collect and interpret inputs from across input sources
+/// This [`Bundle`] allows entities to manage their [`Abilitylike`] actions effectively.
 ///
-/// Use with [`InputManagerPlugin`](crate::plugin::InputManagerPlugin), providing the same enum type to both.
+/// Use with [`AbilityPlugin`](crate::plugin::AbilityPlugin), providing the same enum type to both.
 #[derive(Bundle)]
-pub struct InputManagerBundle<A: Actionlike> {
-    /// An [`ActionState`] component
-    pub action_state: ActionState<A>,
-    /// An [`InputMap`] component
-    pub input_map: InputMap<A>,
+pub struct HasAbilitiesBundle<A: Actionlike> {
     /// A [`Cooldowns`] component
     pub cooldowns: Cooldowns<A>,
     /// A [`ActionCharges`] component
@@ -216,11 +173,9 @@ pub struct InputManagerBundle<A: Actionlike> {
 }
 
 // Cannot use derive(Default), as it forces an undesirable bound on our generics
-impl<A: Actionlike> Default for InputManagerBundle<A> {
+impl<A: Actionlike> Default for HasAbilitiesBundle<A> {
     fn default() -> Self {
         Self {
-            action_state: ActionState::default(),
-            input_map: InputMap::default(),
             cooldowns: Cooldowns::default(),
             charges: ChargeState::default(),
         }

@@ -1,7 +1,7 @@
 //! Cooldowns tick down until actions are ready to be used.
 
 use crate::charges::{ChargeState, Charges};
-use crate::Actionlike;
+use leafwing_input_manager::Actionlike;
 
 use bevy::ecs::prelude::Component;
 use bevy::utils::Duration;

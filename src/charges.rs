@@ -4,7 +4,7 @@
 use bevy::ecs::prelude::Component;
 use std::marker::PhantomData;
 
-use crate::Actionlike;
+use leafwing_input_manager::Actionlike;
 
 /// A component / resource that stores the [`Charges`] for each [`Actionlike`] action of type `A`.
 ///

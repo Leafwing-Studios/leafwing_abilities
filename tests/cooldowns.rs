@@ -4,7 +4,9 @@
 use bevy::input::InputPlugin;
 use bevy::prelude::*;
 use bevy::utils::Duration;
+use leafwing_abilities::prelude::*;
 use leafwing_input_manager::prelude::*;
+
 use std::thread::sleep;
 
 #[derive(Actionlike, Debug, Clone, Copy)]
@@ -36,7 +38,7 @@ impl Action {
 }
 
 fn spawn(mut commands: Commands) {
-    commands.spawn_bundle(InputManagerBundle {
+    commands.spawn_bundle(HasAbilitiesBundle {
         cooldowns: Action::cooldowns(),
         ..default()
     });
