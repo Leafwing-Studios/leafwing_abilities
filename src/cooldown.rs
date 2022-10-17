@@ -24,20 +24,22 @@ use std::marker::PhantomData;
 ///
 ///     
 /// ```rust
+/// use leafwing_abilities::prelude::*;
 /// use leafwing_input_manager::prelude::*;
 /// use bevy::utils::Duration;
 ///
-/// #[derive(Actionlike, Clone, Copy, PartialEq, Eq, Debug)]
+/// #[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Eq, Debug)]
 /// enum Action {
 ///     Run,
 ///     Jump,
 /// }
 ///
 /// let mut action_state = ActionState::<Action>::default();
-/// let mut cooldowns = Cooldowns::new([(Action::Jump, Cooldown::from_secs(1.))]);
+/// let mut cooldowns = CooldownState::new([(Action::Jump, Cooldown::from_secs(1.))]);
 ///
 /// action_state.press(Action::Jump);
 ///
+/// // This will only perform a limited check; consider using the `Abilitylike::ready` method instead
 /// if action_state.just_pressed(Action::Jump) && cooldowns.ready(Action::Jump) {
 ///    // Actually do the jumping thing here
 ///    // Remember to actually begin the cooldown if you jumped!
@@ -75,19 +77,20 @@ impl<A: Abilitylike> Default for CooldownState<A> {
 }
 
 impl<A: Abilitylike> CooldownState<A> {
-    /// Creates a new [`Cooldowns`] from an iterator of `(cooldown, action)` pairs
+    /// Creates a new [`CooldownState`] from an iterator of `(cooldown, action)` pairs
     ///
     /// If a [`Cooldown`] is not provided for an action, that action will be treated as if its cooldown is always available.
     ///
-    /// To create an empty [`Cooldowns`] struct, use the [`Default::default`] method instead.
+    /// To create an empty [`CooldownState`] struct, use the [`Default::default`] method instead.
     ///
     /// # Example
     /// ```rust
-    /// use leafwing_input_manager::cooldown::{Cooldown, Cooldowns};
+    /// use leafwing_abilities::cooldown::{Cooldown, CooldownState};
+    /// use leafwing_abilities::Abilitylike;
     /// use leafwing_input_manager::Actionlike;
     /// use bevy::input::keyboard::KeyCode;
     ///
-    /// #[derive(Actionlike, Clone, Copy, PartialEq, Eq, Hash)]
+    /// #[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Eq, Debug)]
     /// enum Action {
     ///     Run,
     ///     Jump,
@@ -95,7 +98,7 @@ impl<A: Abilitylike> CooldownState<A> {
     ///     Dash,
     /// }
     ///
-    /// let input_map = Cooldowns::new([
+    /// let input_map = CooldownState::new([
     ///     (Action::Shoot, Cooldown::from_secs(0.1)),
     ///     (Action::Dash, Cooldown::from_secs(1.0)),
     /// ]);
@@ -234,7 +237,7 @@ impl<A: Abilitylike> CooldownState<A> {
 ///
 /// ```rust
 /// use bevy::utils::Duration;
-/// use leafwing_input_manager::cooldown::Cooldown;
+/// use leafwing_abilities::cooldown::Cooldown;
 ///
 /// let mut cooldown = Cooldown::new(Duration::from_secs(3));
 /// assert_eq!(cooldown.remaining(), Duration::ZERO);
@@ -280,7 +283,7 @@ impl Cooldown {
     /// # Panics
     ///
     /// The provided max time must be greater than 0.
-    /// Instead, use [`None`] in the [`Cooldowns`] struct for an action without a cooldown.
+    /// Instead, use [`None`] in the [`CooldownState`] struct for an action without a cooldown.
     pub fn from_secs(max_time: f32) -> Cooldown {
         assert!(max_time > 0.);
         let max_time = Duration::from_secs_f32(max_time);

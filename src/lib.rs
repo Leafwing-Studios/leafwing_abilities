@@ -132,9 +132,9 @@ pub fn trigger_action(charges: &mut Option<Charges>, cooldown: &mut Option<Coold
 /// Use with [`AbilityPlugin`](crate::plugin::AbilityPlugin), providing the same enum type to both.
 #[derive(Bundle, Clone, Debug, PartialEq, Eq)]
 pub struct AbilitiesBundle<A: Abilitylike> {
-    /// A [`Cooldowns`] component
+    /// A [`CooldownState`] component
     pub cooldowns: CooldownState<A>,
-    /// A [`ActionCharges`] component
+    /// A [`ChargeState`] component
     pub charges: ChargeState<A>,
 }
 

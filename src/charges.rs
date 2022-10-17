@@ -11,7 +11,8 @@ use crate::Abilitylike;
 /// If [`Charges`] is set for an actions, it is only [`Abilitylike::ready`] when at least one charge is availabe.
 ///
 /// ```rust
-/// use leafwing_input_manager::prelude::*;
+/// use leafwing_abilities::prelude::*;
+/// use leafwing_input_manager::Actionlike;
 ///
 /// #[derive(Actionlike, Abilitylike, Clone)]
 /// enum Action {
@@ -37,9 +38,9 @@ use crate::Abilitylike;
 ///             .build()
 ///     }
 ///
-///     fn cooldowns() -> Cooldowns<Action> {
+///     fn cooldowns() -> CooldownState<Action> {
 ///         // Ommitted cooldowns and charges will cause the action to be treated as if it always had available cooldowns / charges to use
-///         Cooldowns::new([
+///         CooldownState::new([
 ///             (Action::Dash, Cooldown::from_secs(2.)),
 ///             (Action::Spell, Cooldown::from_secs(4.5)),
 ///         ])
@@ -47,18 +48,18 @@ use crate::Abilitylike;
 /// }
 ///
 /// // In a real game you'd spawn a bundle with the appropriate components
-/// let mut bundle = InputManagerBundle {
+/// let mut bundle = AbilitiesBundle {
 ///     cooldowns: Action::cooldowns(),
 ///     charges: Action::charges(),
 ///     ..Default::default()
 /// };
 ///
 /// // Then, you can check if an action is ready to be used
+/// // Consider using the `AbilityState` `WorldQuery` type instead for convenience!
 /// if Action::Spell.ready(&bundle.charges, &bundle.cooldowns) {
 ///     // When you use an action, remember to trigger it!
 ///     Action::Spell.trigger(&mut bundle.charges, &mut bundle.cooldowns);
 /// }
-///
 /// ```
 #[derive(Component, Clone, PartialEq, Eq, Debug)]
 pub struct ChargeState<A: Abilitylike> {
@@ -127,7 +128,8 @@ impl<A: Abilitylike> ChargeState<A> {
     ///
     /// # Example
     /// ```rust
-    /// use leafwing_input_manager::prelude::*;
+    /// use leafwing_abilities::prelude::*;
+    /// use leafwing_input_manager::Actionlike;
     /// use bevy::input::keyboard::KeyCode;
     ///
     /// #[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Eq, Hash)]
