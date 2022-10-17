@@ -126,44 +126,6 @@ pub fn trigger_action(charges: &mut Option<Charges>, cooldown: &mut Option<Coold
     true
 }
 
-/// An iterator of [`Actionlike`] actions
-///
-/// Created by calling [`Actionlike::iter`].
-#[derive(Debug, Clone)]
-pub struct ActionIter<A: Actionlike> {
-    index: usize,
-    _phantom: PhantomData<A>,
-}
-
-impl<A: Actionlike> Iterator for ActionIter<A> {
-    type Item = A;
-
-    fn next(&mut self) -> Option<A> {
-        let item = A::get_at(self.index);
-        if item.is_some() {
-            self.index += 1;
-        }
-
-        item
-    }
-}
-
-impl<A: Actionlike> ExactSizeIterator for ActionIter<A> {
-    fn len(&self) -> usize {
-        A::N_VARIANTS
-    }
-}
-
-// We can't derive this, because otherwise it won't work when A is not default
-impl<A: Actionlike> Default for ActionIter<A> {
-    fn default() -> Self {
-        ActionIter {
-            index: 0,
-            _phantom: PhantomData::default(),
-        }
-    }
-}
-
 /// This [`Bundle`] allows entities to manage their [`Abilitylike`] actions effectively.
 ///
 /// Use with [`AbilityPlugin`](crate::plugin::AbilityPlugin), providing the same enum type to both.
