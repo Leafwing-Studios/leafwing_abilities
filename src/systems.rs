@@ -1,13 +1,13 @@
 //! The systems that power each [`InputManagerPlugin`](crate::plugin::InputManagerPlugin).
 
-use crate::{charges::ChargeState, cooldown::CooldownState};
+use crate::{charges::ChargeState, cooldown::CooldownState, Abilitylike};
 
 use bevy::ecs::{prelude::*, schedule::ShouldRun};
 use bevy::time::Time;
 use leafwing_input_manager::{plugin::ToggleActions, Actionlike};
 
 /// Advances all [`Cooldowns`].
-pub fn tick_cooldowns<A: Actionlike>(
+pub fn tick_cooldowns<A: Abilitylike>(
     mut query: Query<
         (Option<&mut CooldownState<A>>, Option<&mut ChargeState<A>>),
         Or<(With<CooldownState<A>>, With<ChargeState<A>>)>,

@@ -1,4 +1,4 @@
-#![forbid(missing_docs)]
+#![deny(missing_docs)]
 #![forbid(unsafe_code)]
 #![warn(clippy::doc_markdown)]
 #![doc = include_str!("../README.md")]
@@ -8,12 +8,13 @@ use bevy::ecs::prelude::*;
 use charges::{ChargeState, Charges};
 use cooldown::Cooldown;
 use leafwing_input_manager::Actionlike;
-use std::marker::PhantomData;
 
+mod ability_state;
 pub mod charges;
 pub mod cooldown;
 pub mod plugin;
 pub mod systems;
+pub use ability_state::*;
 
 // Importing the derive macro
 pub use leafwing_abilities_macros::Abilitylike;
@@ -130,7 +131,7 @@ pub fn trigger_action(charges: &mut Option<Charges>, cooldown: &mut Option<Coold
 ///
 /// Use with [`AbilityPlugin`](crate::plugin::AbilityPlugin), providing the same enum type to both.
 #[derive(Bundle, Clone, Debug, PartialEq)]
-pub struct AbilitiesBundle<A: Actionlike> {
+pub struct AbilitiesBundle<A: Abilitylike> {
     /// A [`Cooldowns`] component
     pub cooldowns: CooldownState<A>,
     /// A [`ActionCharges`] component
@@ -138,7 +139,7 @@ pub struct AbilitiesBundle<A: Actionlike> {
 }
 
 // Cannot use derive(Default), as it forces an undesirable bound on our generics
-impl<A: Actionlike> Default for AbilitiesBundle<A> {
+impl<A: Abilitylike> Default for AbilitiesBundle<A> {
     fn default() -> Self {
         Self {
             cooldowns: CooldownState::default(),

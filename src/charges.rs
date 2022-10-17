@@ -4,16 +4,16 @@
 use bevy::ecs::prelude::Component;
 use std::marker::PhantomData;
 
-use leafwing_input_manager::Actionlike;
+use crate::Abilitylike;
 
-/// A component / resource that stores the [`Charges`] for each [`Actionlike`] action of type `A`.
+/// A component / resource that stores the [`Charges`] for each [`Abilitylike`] action of type `A`.
 ///
-/// If [`Charges`] is set for an actions, it is only [`Actionlike::ready`] when at least one charge is availabe.
+/// If [`Charges`] is set for an actions, it is only [`Abilitylike::ready`] when at least one charge is availabe.
 ///
 /// ```rust
 /// use leafwing_input_manager::prelude::*;
 ///
-/// #[derive(Actionlike, Clone)]
+/// #[derive(Actionlike, Abilitylike, Clone)]
 /// enum Action {
 ///     // Neither cooldowns nor charges
 ///     Move,
@@ -61,13 +61,13 @@ use leafwing_input_manager::Actionlike;
 ///
 /// ```
 #[derive(Component, Clone, PartialEq, Eq, Debug)]
-pub struct ChargeState<A: Actionlike> {
+pub struct ChargeState<A: Abilitylike> {
     /// The underlying [`Charges`], stored in [`Actionlike::variants`] order.
     charges_vec: Vec<Option<Charges>>,
     _phantom: PhantomData<A>,
 }
 
-impl<A: Actionlike> Default for ChargeState<A> {
+impl<A: Abilitylike> Default for ChargeState<A> {
     fn default() -> Self {
         ChargeState {
             charges_vec: A::variants().map(|_| None).collect(),
@@ -118,7 +118,7 @@ pub enum CooldownStrategy {
     RefreshWhenEmpty,
 }
 
-impl<A: Actionlike> ChargeState<A> {
+impl<A: Abilitylike> ChargeState<A> {
     /// Creates a new [`ChargeState`] from an iterator of `(charges, action)` pairs
     ///
     /// If a [`Charges`] is not provided for an action, that action will be treated as if a charge was always available.
@@ -130,7 +130,7 @@ impl<A: Actionlike> ChargeState<A> {
     /// use leafwing_input_manager::prelude::*;
     /// use bevy::input::keyboard::KeyCode;
     ///
-    /// #[derive(Actionlike, Clone, Copy, PartialEq, Eq, Hash)]
+    /// #[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Eq, Hash)]
     /// enum Action {
     ///     Run,
     ///     Jump,

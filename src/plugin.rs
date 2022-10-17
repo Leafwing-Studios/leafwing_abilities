@@ -1,10 +1,9 @@
 //! Contains main plugin exported by this crate.
 
-use crate::Actionlike;
+use crate::Abilitylike;
 use core::marker::PhantomData;
 
 use bevy::app::{App, CoreStage, Plugin};
-use bevy::ecs::prelude::*;
 use leafwing_input_manager::plugin::{InputManagerSystem, ToggleActions};
 
 /// A [`Plugin`] that collects [`Input`](bevy::input::Input) from disparate sources, producing an [`ActionState`](crate::action_state::ActionState) that can be conveniently checked
@@ -39,12 +38,12 @@ use leafwing_input_manager::plugin::{InputManagerSystem, ToggleActions};
 ///    - powers the [`ActionStateDriver`](crate::action_state::ActionStateDriver) component baseod on an [`Interaction`](bevy::ui::Interaction) component
 ///    - labeled [`InputManagerSystem::Update`]
 /// - [`release_on_disable`](crate::systems::release_on_disable), which resets action states when [`ToggleActions`] is flipped, to avoid persistent presses.
-pub struct AbilityPlugin<A: Actionlike> {
+pub struct AbilityPlugin<A: Abilitylike> {
     _phantom: PhantomData<A>,
 }
 
 // Deriving default induces an undesired bound on the generic
-impl<A: Actionlike> Default for AbilityPlugin<A> {
+impl<A: Abilitylike> Default for AbilityPlugin<A> {
     fn default() -> Self {
         Self {
             _phantom: PhantomData::default(),
@@ -52,7 +51,7 @@ impl<A: Actionlike> Default for AbilityPlugin<A> {
     }
 }
 
-impl<A: Actionlike> AbilityPlugin<A> {
+impl<A: Abilitylike> AbilityPlugin<A> {
     /// Creates a version of the plugin intended to run on the server
     ///
     /// Inputs will not be processed; instead, [`ActionState`](crate::action_state::ActionState)
@@ -66,7 +65,7 @@ impl<A: Actionlike> AbilityPlugin<A> {
     }
 }
 
-impl<A: Actionlike> Plugin for AbilityPlugin<A> {
+impl<A: Abilitylike> Plugin for AbilityPlugin<A> {
     fn build(&self, app: &mut App) {
         use crate::systems::*;
 

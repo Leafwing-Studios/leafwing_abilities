@@ -1,7 +1,9 @@
 //! Cooldowns tick down until actions are ready to be used.
 
-use crate::charges::{ChargeState, Charges};
-use leafwing_input_manager::Actionlike;
+use crate::{
+    charges::{ChargeState, Charges},
+    Abilitylike,
+};
 
 use bevy::ecs::prelude::Component;
 use bevy::utils::Duration;
@@ -46,7 +48,7 @@ use std::marker::PhantomData;
 /// assert!(!cooldowns.ready(Action::Jump));
 /// ```
 #[derive(Component, Debug, Clone, PartialEq, Eq)]
-pub struct CooldownState<A: Actionlike> {
+pub struct CooldownState<A: Abilitylike> {
     /// The [`Cooldown`] of each action
     ///
     /// The position in this vector corresponds to [`Actionlike::index`].
@@ -61,7 +63,7 @@ pub struct CooldownState<A: Actionlike> {
     _phantom: PhantomData<A>,
 }
 
-impl<A: Actionlike> Default for CooldownState<A> {
+impl<A: Abilitylike> Default for CooldownState<A> {
     /// By default, cooldowns are not set.
     fn default() -> Self {
         CooldownState {
@@ -72,7 +74,7 @@ impl<A: Actionlike> Default for CooldownState<A> {
     }
 }
 
-impl<A: Actionlike> CooldownState<A> {
+impl<A: Abilitylike> CooldownState<A> {
     /// Creates a new [`Cooldowns`] from an iterator of `(cooldown, action)` pairs
     ///
     /// If a [`Cooldown`] is not provided for an action, that action will be treated as if its cooldown is always available.
