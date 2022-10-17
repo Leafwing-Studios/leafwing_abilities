@@ -15,6 +15,9 @@ pub mod cooldown;
 pub mod plugin;
 pub mod systems;
 
+// Importing the derive macro
+pub use leafwing_abilities_macros::Abilitylike;
+
 /// Everything you need to get started
 pub mod prelude {
     pub use crate::charges::{ChargeState, Charges};
