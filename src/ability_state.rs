@@ -36,13 +36,13 @@ impl<A: Abilitylike> AbilityStateItem<'_, A> {
 
     /// Is this ability both ready and pressed?
     #[inline]
-    pub fn ready_and_pressed(&mut self, action: A) -> bool {
+    pub fn ready_and_pressed(&self, action: A) -> bool {
         self.action_state.pressed(action.clone()) && self.ready(action)
     }
 
     /// Is this ability both ready and just pressed?
     #[inline]
-    pub fn ready_and_just_pressed(&mut self, action: A) -> bool {
+    pub fn ready_and_just_pressed(&self, action: A) -> bool {
         self.action_state.just_pressed(action.clone()) && self.ready(action)
     }
 
@@ -91,13 +91,13 @@ impl<A: Abilitylike> AbilityStateReadOnlyItem<'_, A> {
 
     /// Is this ability both ready and pressed?
     #[inline]
-    pub fn ready_and_pressed(&mut self, action: A) -> bool {
+    pub fn ready_and_pressed(&self, action: A) -> bool {
         self.action_state.pressed(action.clone()) && self.ready(action)
     }
 
     /// Is this ability both ready and just pressed?
     #[inline]
-    pub fn ready_and_just_pressed(&mut self, action: A) -> bool {
+    pub fn ready_and_just_pressed(&self, action: A) -> bool {
         self.action_state.just_pressed(action.clone()) && self.ready(action)
     }
 }
