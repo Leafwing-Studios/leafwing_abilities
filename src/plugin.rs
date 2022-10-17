@@ -1,6 +1,7 @@
 //! Contains main plugin exported by this crate.
 
 use crate::Abilitylike;
+use bevy::ecs::prelude::*;
 use core::marker::PhantomData;
 
 use bevy::app::{App, CoreStage, Plugin};

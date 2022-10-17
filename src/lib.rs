@@ -81,7 +81,7 @@ pub trait Abilitylike: Actionlike {
     ///     
     /// Calls [`trigger_action`], which can be used manually if you already know the [`Charges`] and [`Cooldown`] of interest.
     fn trigger(
-        &mut self,
+        &self,
         charges: &mut ChargeState<Self>,
         cooldowns: &mut CooldownState<Self>,
     ) -> bool {

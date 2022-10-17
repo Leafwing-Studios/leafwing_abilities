@@ -9,7 +9,7 @@ use leafwing_input_manager::prelude::*;
 
 use std::thread::sleep;
 
-#[derive(Actionlike, Debug, Clone, Copy)]
+#[derive(Actionlike, Abilitylike, Debug, Clone, Copy)]
 enum Action {
     NoCooldown,
     Short,
