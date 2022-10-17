@@ -107,7 +107,7 @@ mod tests {
     use crate as leafwing_abilities;
     use crate::{AbilitiesBundle, AbilityState, Abilitylike};
     use bevy::prelude::*;
-    use leafwing_input_manager::Actionlike;
+    use leafwing_input_manager::{action_state::ActionState, Actionlike};
 
     #[derive(Actionlike, Abilitylike, Clone, Debug)]
     enum TestAction {
@@ -133,7 +133,8 @@ mod tests {
         let mut world = World::new();
         world
             .spawn()
-            .insert_bundle(AbilitiesBundle::<TestAction>::default());
+            .insert_bundle(AbilitiesBundle::<TestAction>::default())
+            .insert(ActionState::<TestAction>::default());
 
         let mut query_state = world.query::<AbilityState<TestAction>>();
         assert_eq!(query_state.iter(&world).len(), 1);

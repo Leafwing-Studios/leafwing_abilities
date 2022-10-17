@@ -4,7 +4,7 @@ use crate::{charges::ChargeState, cooldown::CooldownState, Abilitylike};
 
 use bevy::ecs::{prelude::*, schedule::ShouldRun};
 use bevy::time::Time;
-use leafwing_input_manager::{plugin::ToggleActions, Actionlike};
+use leafwing_input_manager::plugin::ToggleActions;
 
 /// Advances all [`Cooldowns`].
 pub fn tick_cooldowns<A: Abilitylike>(
@@ -36,7 +36,7 @@ pub fn tick_cooldowns<A: Abilitylike>(
 }
 
 /// Returns [`ShouldRun::No`] if [`DisableInput`] exists and [`ShouldRun::Yes`] otherwise
-pub(super) fn run_if_enabled<A: Actionlike>(toggle_actions: Res<ToggleActions<A>>) -> ShouldRun {
+pub(super) fn run_if_enabled<A: Abilitylike>(toggle_actions: Res<ToggleActions<A>>) -> ShouldRun {
     if toggle_actions.enabled {
         ShouldRun::Yes
     } else {
