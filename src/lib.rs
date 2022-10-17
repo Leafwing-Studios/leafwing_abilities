@@ -21,7 +21,7 @@ pub mod prelude {
     pub use crate::cooldown::{Cooldown, Cooldowns};
 
     pub use crate::plugin::AbilityPlugin;
-    pub use crate::{Abilitylike, HasAbilitiesBundle};
+    pub use crate::{AbilitiesBundle, Abilitylike};
 }
 
 /// Allows a type to be used as a gameplay action in an input-agnostic fashion
@@ -165,7 +165,7 @@ impl<A: Actionlike> Default for ActionIter<A> {
 ///
 /// Use with [`AbilityPlugin`](crate::plugin::AbilityPlugin), providing the same enum type to both.
 #[derive(Bundle)]
-pub struct HasAbilitiesBundle<A: Actionlike> {
+pub struct AbilitiesBundle<A: Actionlike> {
     /// A [`Cooldowns`] component
     pub cooldowns: Cooldowns<A>,
     /// A [`ActionCharges`] component
@@ -173,7 +173,7 @@ pub struct HasAbilitiesBundle<A: Actionlike> {
 }
 
 // Cannot use derive(Default), as it forces an undesirable bound on our generics
-impl<A: Actionlike> Default for HasAbilitiesBundle<A> {
+impl<A: Actionlike> Default for AbilitiesBundle<A> {
     fn default() -> Self {
         Self {
             cooldowns: Cooldowns::default(),

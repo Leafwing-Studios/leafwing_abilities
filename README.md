@@ -79,7 +79,7 @@ struct ZyraBundle {
   #[bundle]
   input_manager_bundle: InputManagerBundle<ZyraAction>,
   #[bundle]
-  has_abilities_bundle: HasAbilitiesBundle<ZyraAction>,
+  abilities_bundle: AbilitiesBundle<ZyraAction>,
 }
 
 impl Default for ZyraBundle {
@@ -90,7 +90,7 @@ impl Default for ZyraBundle {
         input_map: ZyraAbility::input_map(),
         ..default()
       }
-      has_abilities_bundle: HasAbilitiesBundle {
+      has_abilities_bundle: AbilitiesBundle {
         cooldowns: ZyraAbility::cooldowns(),
         charges: ZyraAbilties::charges(),
       }
