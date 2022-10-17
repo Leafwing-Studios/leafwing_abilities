@@ -89,7 +89,7 @@ impl Default for ZyraBundle {
       input_manager_bundle: InputManagerBundle {
         input_map: ZyraAbility::input_map(),
         ..default()
-      }
+      },
       has_abilities_bundle: AbilitiesBundle {
         cooldowns: ZyraAbility::cooldowns(),
         charges: ZyraAbilties::charges(),

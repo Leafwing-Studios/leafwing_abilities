@@ -11,7 +11,7 @@ use leafwing_input_manager::action_state::ActionState;
 /// This struct can be used as the first type parameter in a [`Query`](bevy::ecs::system::Query) to fetch the appropriate data.
 ///
 /// Once you have a [`AbilityStateItem`] by calling `.iter_mut()` or `.single_mut` on your query
-/// (or a [`AbilityStateReadOnlyItem`] by calling `.iter() or `.single`),
+/// (or a [`AbilityStateReadOnlyItem`] by calling `.iter()` or `.single`),
 /// you can use the methods defined there to perform common tasks quickly and reliably.
 #[derive(WorldQuery)]
 #[world_query(mutable)]
