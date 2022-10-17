@@ -10,7 +10,8 @@ use leafwing_input_manager::action_state::ActionState;
 /// This type is intended to make collecting the data for [`Abilitylike`] methods easier when working with a full [`AbilitiesBundle`](crate::AbilitiesBundle`).
 /// This struct can be used as the first type parameter in a [`Query`](bevy::ecs::system::Query) to fetch the appropriate data.
 ///
-/// Once you have a [`AbilityStateItem`] by calling `.iter_mut()` or `.single_mut` on your query,
+/// Once you have a [`AbilityStateItem`] by calling `.iter_mut()` or `.single_mut` on your query
+/// (or a [`AbilityStateReadOnlyItem`] by calling `.iter() or `.single`),
 /// you can use the methods defined there to perform common tasks quickly and reliably.
 #[derive(WorldQuery)]
 #[world_query(mutable)]
@@ -75,6 +76,29 @@ impl<A: Abilitylike> AbilityStateItem<'_, A> {
         } else {
             false
         }
+    }
+}
+
+impl<A: Abilitylike> AbilityStateReadOnlyItem<'_, A> {
+    /// Is this ability ready?
+    ///
+    /// Calls [`Abilitylike::ready`] on the specified action.
+    #[inline]
+    #[must_use]
+    pub fn ready(&self, action: A) -> bool {
+        action.ready(self.charges, self.cooldowns)
+    }
+
+    /// Is this ability both ready and pressed?
+    #[inline]
+    pub fn ready_and_pressed(&mut self, action: A) -> bool {
+        self.action_state.pressed(action.clone()) && self.ready(action)
+    }
+
+    /// Is this ability both ready and just pressed?
+    #[inline]
+    pub fn ready_and_just_pressed(&mut self, action: A) -> bool {
+        self.action_state.just_pressed(action.clone()) && self.ready(action)
     }
 }
 
