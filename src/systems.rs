@@ -6,7 +6,7 @@ use bevy::ecs::{prelude::*, schedule::ShouldRun};
 use bevy::time::Time;
 use leafwing_input_manager::plugin::ToggleActions;
 
-/// Advances all [`Cooldowns`].
+/// Advances all [`CooldownState`] components and resources for ability type `A`.
 pub fn tick_cooldowns<A: Abilitylike>(
     mut query: Query<
         (Option<&mut CooldownState<A>>, Option<&mut ChargeState<A>>),

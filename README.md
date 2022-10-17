@@ -7,66 +7,66 @@ Some of those actions will be abilities!
 Abilities are intended for gameplay use, and follow complex but relatively standardized logic about how they might be used.
 
 ```rust
-use leafwing_input_manager::prelude::*;
-use leafwing_abilities::prelude::*;
 use bevy::prelude::*;
+use leafwing_abilities::prelude::*;
+use leafwing_input_manager::prelude::*;
 
 // We're modelling https://leagueoflegends.fandom.com/wiki/Zyra/LoL
 // to show off this crate's features!
-#[derive(Actionlike, Abilitylike, Clone)]
-pub enum ZyraAbilties {
-  GardenOfThorns,
-  DeadlySpines,
-  RampantGrowth,
-  GraspingRoots,
-  Stranglethorns,
+#[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq)]
+pub enum ZyraAbility {
+    GardenOfThorns,
+    DeadlySpines,
+    RampantGrowth,
+    GraspingRoots,
+    Stranglethorns,
 }
 
 impl ZyraAbility {
-  fn input_map() -> InputMap<ZyraAbility> {
-    use ZyraAbility::*;
+    fn input_map() -> InputMap<ZyraAbility> {
+        use ZyraAbility::*;
 
-    // We can use this `new` idiom, which accepts an iterator of pairs
-    InputMap::new([
-      (KeyCode::Q, DeadlySpines),
-      (KeyCode::W, RampantGrowth),
-      (KeyCode::E, GraspingRoots),
-      (KeyCode::R, Stranglethorns),
-    ])
-  }
-
-  // This match pattern is super useful to be sure you've defined an attribute for every variant
-  fn cooldown(&self) -> Cooldown {
-    use ZyraAbility::*;
-
-    let seconds: f32 = match *self {
-      GardenOfThorns => 13.
-      DeadlySpines => 7.
-      RampantGrowth => 18.
-      GraspingRoots => 12.
-      Stranglethorns => 110.
-    };
-    
-    Cooldown::from_secs(seconds)
-  }
-
-  fn cooldowns() -> CooldownState<ZyraAbility> {
-    use ZyraAbility::*;
-
-    let mut cooldowns = CooldownState::default();
-
-    // Now, we can loop over all the variants to populate our struct
-    for ability in ZyraAbility::variants() {
-      cooldowns.set(ability, ability.cooldown());
+        // We can use this `new` idiom, which accepts an iterator of pairs
+        InputMap::new([
+            (KeyCode::Q, DeadlySpines),
+            (KeyCode::W, RampantGrowth),
+            (KeyCode::E, GraspingRoots),
+            (KeyCode::R, Stranglethorns),
+        ])
     }
 
-    cooldowns
-  }
+    // This match pattern is super useful to be sure you've defined an attribute for every variant
+    fn cooldown(&self) -> Cooldown {
+        use ZyraAbility::*;
 
-  fn charges() -> ChargeState<ZyraAbility> {
-    // The builder API can be very convenient when you only need to set a couple of values
-    ChargeState::default().set(ZyraAbility::RampantGrowth, Charges::replenish_one(2))
-  }
+        let seconds: f32 = match *self {
+            GardenOfThorns => 13.0,
+            DeadlySpines => 7.0,
+            RampantGrowth => 18.0,
+            GraspingRoots => 12.0,
+            Stranglethorns => 110.0,
+        };
+
+        Cooldown::from_secs(seconds)
+    }
+
+    fn cooldowns() -> CooldownState<ZyraAbility> {
+        let mut cooldowns = CooldownState::default();
+
+        // Now, we can loop over all the variants to populate our struct
+        for ability in ZyraAbility::variants() {
+            cooldowns.set(ability, ability.cooldown());
+        }
+
+        cooldowns
+    }
+
+    fn charges() -> ChargeState<ZyraAbility> {
+        // The builder API can be very convenient when you only need to set a couple of values
+        ChargeState::default()
+            .set(ZyraAbility::RampantGrowth, Charges::replenish_one(2))
+            .build()
+    }
 }
 
 /// Marker component for this champion
@@ -75,27 +75,27 @@ struct Zyra;
 
 #[derive(Bundle)]
 struct ZyraBundle {
-  champion: Zyra,
-  #[bundle]
-  input_manager_bundle: InputManagerBundle<ZyraAction>,
-  #[bundle]
-  abilities_bundle: AbilitiesBundle<ZyraAction>,
+    champion: Zyra,
+    #[bundle]
+    input_manager_bundle: InputManagerBundle<ZyraAbility>,
+    #[bundle]
+    abilities_bundle: AbilitiesBundle<ZyraAbility>,
 }
 
 impl Default for ZyraBundle {
-  fn default() -> Self {
-    ZyraBundle {
-      champion: Zyra,
-      input_manager_bundle: InputManagerBundle {
-        input_map: ZyraAbility::input_map(),
-        ..default()
-      }
-      has_abilities_bundle: AbilitiesBundle {
-        cooldowns: ZyraAbility::cooldowns(),
-        charges: ZyraAbilties::charges(),
-      }
+    fn default() -> Self {
+        ZyraBundle {
+            champion: Zyra,
+            input_manager_bundle: InputManagerBundle::<ZyraAbility> {
+                input_map: ZyraAbility::input_map(),
+                ..default()
+            },
+            abilities_bundle: AbilitiesBundle::<ZyraAbility> {
+                cooldowns: ZyraAbility::cooldowns(),
+                charges: ZyraAbility::charges(),
+            },
+        }
     }
-  }
 }
 ```
 
