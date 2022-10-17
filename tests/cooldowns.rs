@@ -49,7 +49,7 @@ fn cooldowns_on_entity() {
     use Action::*;
 
     let mut app = App::new();
-    app.add_plugin(InputManagerPlugin::<Action>::default())
+    app.add_plugin(AbilityPlugin::<Action>::default())
         .add_plugins(MinimalPlugins)
         .add_plugin(InputPlugin)
         .add_startup_system(spawn);
@@ -91,7 +91,7 @@ fn cooldowns_in_resource() {
     use Action::*;
 
     let mut app = App::new();
-    app.add_plugin(InputManagerPlugin::<Action>::default())
+    app.add_plugin(AbilityPlugin::<Action>::default())
         .add_plugins(MinimalPlugins)
         .add_plugin(InputPlugin)
         .insert_resource(Action::cooldowns());
@@ -124,7 +124,7 @@ fn cooldowns_in_resource() {
 #[test]
 fn global_cooldowns_tick() {
     let mut app = App::new();
-    app.add_plugin(InputManagerPlugin::<Action>::default())
+    app.add_plugin(AbilityPlugin::<Action>::default())
         .add_plugins(MinimalPlugins)
         .add_plugin(InputPlugin)
         .insert_resource(Action::cooldowns());
@@ -144,7 +144,7 @@ fn global_cooldowns_tick() {
 #[test]
 fn global_cooldown_blocks_cooldownless_actions() {
     let mut app = App::new();
-    app.add_plugin(InputManagerPlugin::<Action>::default())
+    app.add_plugin(AbilityPlugin::<Action>::default())
         .add_plugins(MinimalPlugins)
         .add_plugin(InputPlugin)
         .insert_resource(Action::cooldowns());
@@ -170,7 +170,7 @@ fn global_cooldown_blocks_cooldownless_actions() {
 #[test]
 fn global_cooldown_affects_other_actions() {
     let mut app = App::new();
-    app.add_plugin(InputManagerPlugin::<Action>::default())
+    app.add_plugin(AbilityPlugin::<Action>::default())
         .add_plugins(MinimalPlugins)
         .add_plugin(InputPlugin)
         .insert_resource(Action::cooldowns());
@@ -195,7 +195,7 @@ fn global_cooldown_affects_other_actions() {
 #[test]
 fn global_cooldown_overrides_short_cooldowns() {
     let mut app = App::new();
-    app.add_plugin(InputManagerPlugin::<Action>::default())
+    app.add_plugin(AbilityPlugin::<Action>::default())
         .add_plugins(MinimalPlugins)
         .add_plugin(InputPlugin)
         .insert_resource(Action::cooldowns());
