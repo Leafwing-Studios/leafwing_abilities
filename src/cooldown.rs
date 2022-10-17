@@ -46,7 +46,7 @@ use std::marker::PhantomData;
 /// assert!(!cooldowns.ready(Action::Jump));
 /// ```
 #[derive(Component, Debug, Clone, PartialEq, Eq)]
-pub struct Cooldowns<A: Actionlike> {
+pub struct CooldownState<A: Actionlike> {
     /// The [`Cooldown`] of each action
     ///
     /// The position in this vector corresponds to [`Actionlike::index`].
@@ -61,10 +61,10 @@ pub struct Cooldowns<A: Actionlike> {
     _phantom: PhantomData<A>,
 }
 
-impl<A: Actionlike> Default for Cooldowns<A> {
+impl<A: Actionlike> Default for CooldownState<A> {
     /// By default, cooldowns are not set.
     fn default() -> Self {
-        Cooldowns {
+        CooldownState {
             cooldown_vec: A::variants().map(|_| None).collect(),
             global_cooldown: None,
             _phantom: PhantomData::default(),
@@ -72,7 +72,7 @@ impl<A: Actionlike> Default for Cooldowns<A> {
     }
 }
 
-impl<A: Actionlike> Cooldowns<A> {
+impl<A: Actionlike> CooldownState<A> {
     /// Creates a new [`Cooldowns`] from an iterator of `(cooldown, action)` pairs
     ///
     /// If a [`Cooldown`] is not provided for an action, that action will be treated as if its cooldown is always available.
@@ -100,7 +100,7 @@ impl<A: Actionlike> Cooldowns<A> {
     /// ```
     #[must_use]
     pub fn new(action_cooldown_pairs: impl IntoIterator<Item = (A, Cooldown)>) -> Self {
-        let mut cooldowns = Cooldowns::default();
+        let mut cooldowns = CooldownState::default();
         for (action, cooldown) in action_cooldown_pairs.into_iter() {
             cooldowns.set(action, cooldown);
         }

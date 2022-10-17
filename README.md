@@ -50,10 +50,10 @@ impl ZyraAbility {
     Cooldown::from_secs(seconds)
   }
 
-  fn cooldowns() -> Cooldowns<ZyraAbility> {
+  fn cooldowns() -> CooldownState<ZyraAbility> {
     use ZyraAbility::*;
 
-    let mut cooldowns = Cooldowns::default();
+    let mut cooldowns = CooldownState::default();
 
     // Now, we can loop over all the variants to populate our struct
     for ability in ZyraAbility::variants() {
@@ -63,9 +63,9 @@ impl ZyraAbility {
     cooldowns
   }
 
-  fn charges() -> ActionCharges<ZyraAbility> {
+  fn charges() -> ChargeState<ZyraAbility> {
     // The builder API can be very convenient when you only need to set a couple of values
-    ActionCharges::default().set(ZyraAbility::RampantGrowth, Charges::replenish_one(2))
+    ChargeState::default().set(ZyraAbility::RampantGrowth, Charges::replenish_one(2))
   }
 }
 

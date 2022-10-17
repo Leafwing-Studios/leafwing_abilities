@@ -3,7 +3,7 @@
 #![warn(clippy::doc_markdown)]
 #![doc = include_str!("../README.md")]
 
-use crate::cooldown::Cooldowns;
+use crate::cooldown::CooldownState;
 use bevy::ecs::prelude::*;
 use charges::{ChargeState, Charges};
 use cooldown::Cooldown;
@@ -21,7 +21,7 @@ pub use leafwing_abilities_macros::Abilitylike;
 /// Everything you need to get started
 pub mod prelude {
     pub use crate::charges::{ChargeState, Charges};
-    pub use crate::cooldown::{Cooldown, Cooldowns};
+    pub use crate::cooldown::{Cooldown, CooldownState};
 
     pub use crate::plugin::AbilityPlugin;
     pub use crate::{AbilitiesBundle, Abilitylike};
@@ -66,7 +66,7 @@ pub trait Abilitylike: Actionlike {
     /// Otherwise, returns `true`.
     ///
     /// Calls [`action_ready`], which can be used manually if you already know the [`Charges`] and [`Cooldown`] of interest.
-    fn ready(&self, charges: &ChargeState<Self>, cooldowns: &Cooldowns<Self>) -> bool {
+    fn ready(&self, charges: &ChargeState<Self>, cooldowns: &CooldownState<Self>) -> bool {
         let charges = charges.get(self.clone());
         let cooldowns = cooldowns.get(self.clone());
 
@@ -82,7 +82,7 @@ pub trait Abilitylike: Actionlike {
     fn trigger(
         &mut self,
         charges: &mut ChargeState<Self>,
-        cooldowns: &mut Cooldowns<Self>,
+        cooldowns: &mut CooldownState<Self>,
     ) -> bool {
         let charges = charges.get_mut(self.clone());
         let cooldowns = cooldowns.get_mut(self.clone());
@@ -167,10 +167,10 @@ impl<A: Actionlike> Default for ActionIter<A> {
 /// This [`Bundle`] allows entities to manage their [`Abilitylike`] actions effectively.
 ///
 /// Use with [`AbilityPlugin`](crate::plugin::AbilityPlugin), providing the same enum type to both.
-#[derive(Bundle)]
+#[derive(Bundle, Clone, Debug, PartialEq)]
 pub struct AbilitiesBundle<A: Actionlike> {
     /// A [`Cooldowns`] component
-    pub cooldowns: Cooldowns<A>,
+    pub cooldowns: CooldownState<A>,
     /// A [`ActionCharges`] component
     pub charges: ChargeState<A>,
 }
@@ -179,7 +179,7 @@ pub struct AbilitiesBundle<A: Actionlike> {
 impl<A: Actionlike> Default for AbilitiesBundle<A> {
     fn default() -> Self {
         Self {
-            cooldowns: Cooldowns::default(),
+            cooldowns: CooldownState::default(),
             charges: ChargeState::default(),
         }
     }
