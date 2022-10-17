@@ -103,6 +103,7 @@ impl Default for ZyraBundle {
 
 - track and automatically tick cooldowns
 - store multiple charges of abilities
+- Leafwing Studio's trademark `#[deny(missing_docs)]`
 
 Planned:
 
