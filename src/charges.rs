@@ -1,5 +1,6 @@
 //! Charges are "uses of an action".
 //! Actions may only be used if at least one charge is available.
+//! Unlike pools, charges are not shared across abilities.
 
 use bevy::ecs::prelude::Component;
 use std::marker::PhantomData;

@@ -204,6 +204,8 @@ pub fn trigger_ability<P: Pool>(
 /// Commonly combined with an [`InputManagerBundle`](leafwing_input_manager::InputManagerBundle),
 /// which tracks whether or not actions are pressed.
 ///
+/// If you would like to track resource costs for your abilities, combine this with a [`PoolBundle`](crate::pool::PoolBundle).
+///
 /// Use with [`AbilityPlugin`](crate::plugin::AbilityPlugin), providing the same enum type to both.
 #[derive(Bundle, Clone, Debug, PartialEq, Eq)]
 pub struct AbilitiesBundle<A: Abilitylike> {

@@ -19,10 +19,11 @@ use crate::{Abilitylike, CannotUseAbility};
 ///
 /// Each type that implements this trait should be stored on a component (or, if your actions are globally unique, a resource),
 /// and contains information about the current, max and regeneration rates
-pub trait Pool: Component + Sized {
+pub trait Pool: Sized {
     /// A type that tracks the quantity within a pool.
     ///
-    /// Unlike a [`Pool`] type, which stores a max, min
+    /// Unlike a [`Pool`] type, which stores a max, min and regeneration,
+    /// quantities are lighter weight and should be used for things like damage amounts, mana costs and regen rates.
     type Quantity: Add<Output = Self::Quantity>
         + Sub<Output = Self::Quantity>
         + AddAssign
@@ -31,10 +32,10 @@ pub trait Pool: Component + Sized {
         + Div<f32, Output = Self::Quantity>
         + PartialEq
         + PartialOrd
+        + Clone
         + Copy
         + Send
         + Sync
-        + Clone
         + 'static;
 
     /// The minimum value of the pool type.
