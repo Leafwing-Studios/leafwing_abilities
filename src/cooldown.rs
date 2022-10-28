@@ -136,7 +136,6 @@ impl<A: Abilitylike> CooldownState<A> {
     /// This will be `Ok` if the underlying [`Cooldown::ready`] call is true,
     /// or if no cooldown is stored for this action.
     #[inline]
-    #[must_use]
     pub fn ready(&self, action: A) -> Result<(), CannotUseAbility> {
         self.gcd_ready()?;
 
@@ -151,7 +150,6 @@ impl<A: Abilitylike> CooldownState<A> {
     ///
     /// Returns `Ok(())` if no GCD is set.
     #[inline]
-    #[must_use]
     pub fn gcd_ready(&self) -> Result<(), CannotUseAbility> {
         if let Some(global_cooldown) = self.global_cooldown.as_ref() {
             global_cooldown.ready()

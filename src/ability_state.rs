@@ -42,14 +42,8 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateItem<'_, A, P> {
     /// Calls [`Abilitylike::ready`] on the specified action.
     #[inline]
     pub fn ready(&self, action: A) -> Result<(), CannotUseAbility> {
-        let maybe_pool = match &self.pool {
-            Some(mut_pool) => Some(&**mut_pool),
-            None => None,
-        };
-        let maybe_ability_costs = match &self.ability_costs {
-            Some(ability_costs) => Some(&**ability_costs),
-            None => None,
-        };
+        let maybe_pool = self.pool.as_deref();
+        let maybe_ability_costs = self.ability_costs.as_deref();
 
         action.ready(
             &*self.charges,
@@ -90,14 +84,8 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateItem<'_, A, P> {
     /// Calls [`Abilitylike::trigger`] on the specified action.
     #[inline]
     pub fn trigger(&mut self, action: A) -> Result<(), CannotUseAbility> {
-        let maybe_pool = match &mut self.pool {
-            Some(mut_pool) => Some(&mut **mut_pool),
-            None => None,
-        };
-        let maybe_ability_costs = match &self.ability_costs {
-            Some(ability_costs) => Some(&**ability_costs),
-            None => None,
-        };
+        let maybe_pool = self.pool.as_deref_mut();
+        let maybe_ability_costs = self.ability_costs.as_deref();
 
         action.trigger(
             &mut *self.charges,
@@ -113,14 +101,8 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateItem<'_, A, P> {
     #[inline]
     pub fn trigger_if_pressed(&mut self, action: A) -> Result<(), CannotUseAbility> {
         if self.action_state.just_pressed(action.clone()) {
-            let maybe_pool = match &mut self.pool {
-                Some(mut_pool) => Some(&mut **mut_pool),
-                None => None,
-            };
-            let maybe_ability_costs = match &self.ability_costs {
-                Some(ability_costs) => Some(&**ability_costs),
-                None => None,
-            };
+            let maybe_pool = self.pool.as_deref_mut();
+            let maybe_ability_costs = self.ability_costs.as_deref();
 
             action.trigger(
                 &mut *self.charges,
@@ -139,14 +121,8 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateItem<'_, A, P> {
     #[inline]
     pub fn trigger_if_just_pressed(&mut self, action: A) -> Result<(), CannotUseAbility> {
         if self.action_state.just_pressed(action.clone()) {
-            let maybe_pool = match &mut self.pool {
-                Some(mut_pool) => Some(&mut **mut_pool),
-                None => None,
-            };
-            let maybe_ability_costs = match &self.ability_costs {
-                Some(ability_costs) => Some(&**ability_costs),
-                None => None,
-            };
+            let maybe_pool = self.pool.as_deref_mut();
+            let maybe_ability_costs = self.ability_costs.as_deref();
 
             action.trigger(
                 &mut *self.charges,
