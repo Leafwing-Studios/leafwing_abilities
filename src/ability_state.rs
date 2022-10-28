@@ -1,8 +1,13 @@
 // Docs are missing from generated types :(
 #![allow(missing_docs)]
 
-use crate::{charges::ChargeState, cooldown::CooldownState, Abilitylike, CannotUseAbility};
-use bevy::ecs::query::WorldQuery;
+use crate::{
+    charges::ChargeState,
+    cooldown::CooldownState,
+    pool::{AbilityCosts, Pool},
+    Abilitylike, CannotUseAbility,
+};
+use bevy::{ecs::query::WorldQuery, prelude::Component};
 use leafwing_input_manager::action_state::ActionState;
 
 /// A custom [`WorldQuery`](bevy::ecs::query::WorldQuery) type that fetches all ability relevant data for you.
@@ -15,22 +20,31 @@ use leafwing_input_manager::action_state::ActionState;
 /// you can use the methods defined there to perform common tasks quickly and reliably.
 #[derive(WorldQuery)]
 #[world_query(mutable)]
-pub struct AbilityState<A: Abilitylike> {
+pub struct AbilityState<A: Abilitylike, P: Pool + Component> {
     /// The [`ActionState`] of the abilities of this entity of type `A`
     pub action_state: &'static ActionState<A>,
     /// The [`ChargeState`] associated with each action of type `A` for this entity
     pub charges: &'static mut ChargeState<A>,
     /// The [`CooldownState`] associated with each action of type `A` for this entity
     pub cooldowns: &'static mut CooldownState<A>,
+    /// The [`Pool`] of resources of type `P` that should be spent
+    pub pool: &'static mut P,
+    /// The [`AbilityCosts] of each ability, in terms of [`P::Quantity`](Pool::Quantity)
+    pub ability_costs: &'static mut AbilityCosts<A, P>,
 }
 
-impl<A: Abilitylike> AbilityStateItem<'_, A> {
+impl<A: Abilitylike, P: Pool + Component> AbilityStateItem<'_, A, P> {
     /// Is this ability ready?
     ///
     /// Calls [`Abilitylike::ready`] on the specified action.
     #[inline]
     pub fn ready(&self, action: A) -> Result<(), CannotUseAbility> {
-        action.ready(&*self.charges, &*self.cooldowns)
+        action.ready(
+            &*self.charges,
+            &*self.cooldowns,
+            &*self.pool,
+            &*self.ability_costs,
+        )
     }
 
     /// Is this ability both ready and pressed?
@@ -64,7 +78,12 @@ impl<A: Abilitylike> AbilityStateItem<'_, A> {
     /// Calls [`Abilitylike::trigger`] on the specified action.
     #[inline]
     pub fn trigger(&mut self, action: A) -> Result<(), CannotUseAbility> {
-        action.trigger(&mut *self.charges, &mut *self.cooldowns)
+        action.trigger(
+            &mut *self.charges,
+            &mut *self.cooldowns,
+            &mut *self.pool,
+            &*self.ability_costs,
+        )
     }
 
     /// Triggers this ability (and depletes available charges), if action is pressed.
@@ -73,7 +92,12 @@ impl<A: Abilitylike> AbilityStateItem<'_, A> {
     #[inline]
     pub fn trigger_if_pressed(&mut self, action: A) -> Result<(), CannotUseAbility> {
         if self.action_state.just_pressed(action.clone()) {
-            action.trigger(&mut *self.charges, &mut *self.cooldowns)
+            action.trigger(
+                &mut *self.charges,
+                &mut *self.cooldowns,
+                &mut *self.pool,
+                &*self.ability_costs,
+            )
         } else {
             Err(CannotUseAbility::NotPressed)
         }
@@ -85,20 +109,25 @@ impl<A: Abilitylike> AbilityStateItem<'_, A> {
     #[inline]
     pub fn trigger_if_just_pressed(&mut self, action: A) -> Result<(), CannotUseAbility> {
         if self.action_state.just_pressed(action.clone()) {
-            action.trigger(&mut *self.charges, &mut *self.cooldowns)
+            action.trigger(
+                &mut *self.charges,
+                &mut *self.cooldowns,
+                &mut *self.pool,
+                &*self.ability_costs,
+            )
         } else {
             Err(CannotUseAbility::NotPressed)
         }
     }
 }
 
-impl<A: Abilitylike> AbilityStateReadOnlyItem<'_, A> {
+impl<A: Abilitylike, P: Pool + Component> AbilityStateReadOnlyItem<'_, A, P> {
     /// Is this ability ready?
     ///
     /// Calls [`Abilitylike::ready`] on the specified action.
     #[inline]
     pub fn ready(&self, action: A) -> Result<(), CannotUseAbility> {
-        action.ready(self.charges, self.cooldowns)
+        action.ready(self.charges, self.cooldowns, self.pool, self.ability_costs)
     }
 
     /// Is this ability both ready and pressed?

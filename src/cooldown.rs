@@ -114,17 +114,21 @@ impl<A: Abilitylike> CooldownState<A> {
 
     /// Triggers the cooldown of the `action` if it is available to be used.
     ///
-    /// This should always be paired with [`Cooldowns::ready`],
-    /// to check if the action can be used before triggering its cooldown.
+    /// This can be paired with [`Cooldowns::ready`],
+    /// to check if the action can be used before triggering its cooldown,
+    /// or this can be used on its own,
+    /// reading the returned [`Result`] to determine if the ability was used.
     #[inline]
-    pub fn trigger(&mut self, action: A) {
+    pub fn trigger(&mut self, action: A) -> Result<(), CannotUseAbility> {
         if let Some(cooldown) = self.get_mut(action) {
-            cooldown.trigger();
+            cooldown.trigger()?;
         }
 
         if let Some(global_cooldown) = self.global_cooldown.as_mut() {
-            global_cooldown.trigger();
+            global_cooldown.trigger()?;
         }
+
+        Ok(())
     }
 
     /// Can the corresponding `action` be used?
