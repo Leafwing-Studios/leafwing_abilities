@@ -17,14 +17,7 @@ use crate::{Abilitylike, CannotUseAbility};
 ///
 /// Each type that implements this trait should be stored on a component (or, if your actions are globally unique, a resource),
 /// and contains information about the current, max and regeneration rates
-pub trait Pool:
-    Add<Self::Quantity>
-    + AddAssign<Self::Quantity>
-    + Sub<Self::Quantity>
-    + SubAssign<Self::Quantity>
-    + PartialEq
-    + Sized
-{
+pub trait Pool: Sized {
     /// A type that tracks the quantity within a pool.
     ///
     /// Unlike a [`Pool`] type, which stores a max, min

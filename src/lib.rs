@@ -15,6 +15,8 @@ pub mod charges;
 pub mod cooldown;
 pub mod plugin;
 pub mod pool;
+#[cfg(feature = "premade_pools")]
+pub mod premade_pools;
 pub mod systems;
 pub use ability_state::*;
 
