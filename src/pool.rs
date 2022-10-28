@@ -141,7 +141,7 @@ pub trait Pool: Sized {
 }
 
 /// The maximum value for a [`Pool`] was set to be less than [`Pool::ZERO`].
-#[derive(Debug, Clone, Copy, PartialEq, Error)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Error)]
 #[error("The maximum quantity that can be stored in a pool must be greater than zero.")]
 pub struct MaxPoolLessThanZero;
 
