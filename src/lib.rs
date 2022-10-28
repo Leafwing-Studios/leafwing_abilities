@@ -98,17 +98,22 @@ pub trait Abilitylike: Actionlike {
 }
 
 /// An [`Error`](std::error::Error) type that explains why an ability could not be used.
-#[derive(Error, Debug, Clone, Copy, PartialEq, Eq)]
+///
+/// The priority of these errors follows the order of this enum.
+/// For example, if an ability is out of charges and also not pressed,
+/// [`ready_and_pressed`](crate::ability_state::AbilityStateItem) will return `Err(CannotUseAbility::NotPressed)`,
+/// rather than `Err(CannotUseAbility::NoCharges)`, even though both are true.
+#[derive(Error, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum CannotUseAbility {
-    /// TCannotUseAbilityhe [`Cooldown`] of this ability was not ready
-    #[error("Cooldown not ready.")]
-    OnCooldown,
-    /// There were no [`Charges`] available for this ability
-    #[error("No charges available.")]
-    NoCharges,
     /// The corresponding [`ActionState`](leafwing_input_manager::action_state::ActionState) was not pressed
     #[error("The ability was not pressed.")]
     NotPressed,
+    /// There were no [`Charges`] available for this ability
+    #[error("No charges available.")]
+    NoCharges,
+    /// The [`Cooldown`] of this ability was not ready
+    #[error("Cooldown not ready.")]
+    OnCooldown,
 }
 
 /// Checks if a [`Charges`], [`Cooldown`] pair associated with an action is ready to use.
@@ -182,7 +187,7 @@ impl<A: Abilitylike> Default for AbilitiesBundle<A> {
 mod tests {
     use crate::charges::Charges;
     use crate::cooldown::Cooldown;
-    use crate::{action_ready, trigger_action};
+    use crate::{action_ready, trigger_action, CannotUseAbility};
 
     #[test]
     fn action_ready_no_cooldown_no_charges() {
@@ -195,7 +200,10 @@ mod tests {
         assert!(action_ready(&None, &cooldown).is_ok());
 
         cooldown.as_mut().map(|c| c.trigger());
-        assert!(action_ready(&None, &cooldown).is_err());
+        assert_eq!(
+            action_ready(&None, &cooldown),
+            Err(CannotUseAbility::OnCooldown)
+        );
     }
 
     #[test]
@@ -205,7 +213,10 @@ mod tests {
         assert!(action_ready(&charges, &None).is_ok());
 
         charges.as_mut().map(|c| c.expend());
-        assert!(action_ready(&charges, &None).is_err());
+        assert_eq!(
+            action_ready(&charges, &None),
+            Err(crate::CannotUseAbility::NoCharges)
+        );
     }
 
     #[test]
@@ -217,7 +228,10 @@ mod tests {
 
         // Out of charges, cooldown ready
         charges.as_mut().map(|c| c.expend());
-        assert!(action_ready(&charges, &cooldown).is_err());
+        assert_eq!(
+            action_ready(&charges, &cooldown),
+            Err(CannotUseAbility::NoCharges)
+        );
 
         // Just charges
         charges.as_mut().map(|c| c.replenish());
@@ -226,7 +240,10 @@ mod tests {
 
         // Neither
         charges.as_mut().map(|c| c.expend());
-        assert!(action_ready(&charges, &cooldown).is_err());
+        assert_eq!(
+            action_ready(&charges, &cooldown),
+            Err(CannotUseAbility::NoCharges)
+        );
     }
 
     #[test]
@@ -241,8 +258,14 @@ mod tests {
         assert!(trigger_action(&mut None, &mut cooldown).is_ok());
 
         cooldown.as_mut().map(|c| c.trigger());
-        assert!(trigger_action(&mut None, &mut cooldown).is_err());
-        assert!(action_ready(&None, &cooldown).is_err());
+        assert_eq!(
+            trigger_action(&mut None, &mut cooldown),
+            Err(CannotUseAbility::OnCooldown)
+        );
+        assert_eq!(
+            action_ready(&None, &cooldown),
+            Err(CannotUseAbility::OnCooldown)
+        );
     }
 
     #[test]
@@ -252,8 +275,14 @@ mod tests {
         assert!(trigger_action(&mut charges, &mut None).is_ok());
 
         charges.as_mut().map(|c| c.expend());
-        assert!(trigger_action(&mut charges, &mut None).is_err());
-        assert!(action_ready(&charges, &None).is_err());
+        assert_eq!(
+            trigger_action(&mut charges, &mut None),
+            Err(CannotUseAbility::NoCharges)
+        );
+        assert_eq!(
+            action_ready(&charges, &None),
+            Err(CannotUseAbility::NoCharges)
+        );
     }
 
     #[test]
@@ -262,10 +291,16 @@ mod tests {
         let mut cooldown = Some(Cooldown::from_secs(1.));
         // Both available
         assert!(trigger_action(&mut charges, &mut cooldown).is_ok());
-        assert!(action_ready(&charges, &cooldown).is_err());
+        assert_eq!(
+            action_ready(&charges, &cooldown),
+            Err(CannotUseAbility::NoCharges)
+        );
 
         // None available
-        assert!(trigger_action(&mut charges, &mut cooldown).is_err());
+        assert_eq!(
+            trigger_action(&mut charges, &mut cooldown),
+            Err(CannotUseAbility::NoCharges)
+        );
 
         // Just charges
         charges.as_mut().map(|c| c.replenish());
@@ -274,6 +309,9 @@ mod tests {
         // Just cooldown
         charges.as_mut().map(|c| c.expend());
         cooldown.as_mut().map(|c| c.refresh());
-        assert!(trigger_action(&mut charges, &mut cooldown).is_err());
+        assert_eq!(
+            trigger_action(&mut charges, &mut cooldown),
+            Err(CannotUseAbility::NoCharges)
+        );
     }
 }
