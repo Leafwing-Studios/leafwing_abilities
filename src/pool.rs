@@ -72,6 +72,15 @@ pub trait Pool: Sized {
     /// Panics if `max` is less than [`Pool::ZERO`].
     fn current(&self) -> Self::Quantity;
 
+    /// Check if the given cost can be paid by this pool.
+    fn available(&self, amount: Self::Quantity) -> Result<(), CannotUseAbility> {
+        if self.current() >= amount {
+            Ok(())
+        } else {
+            Err(CannotUseAbility::PoolInsufficient)
+        }
+    }
+
     /// Sets the current quantity of resources in the pool.
     ///
     /// This will be bounded by the minimum and maximum values of this pool.
@@ -93,13 +102,11 @@ pub trait Pool: Sized {
     ///
     /// Otherwise, return the error [`CannotUseAbility::PoolEmpty`].
     fn expend(&mut self, amount: Self::Quantity) -> Result<(), CannotUseAbility> {
-        if self.current() >= amount {
-            let new_current = self.current() - amount;
-            self.set_current(new_current);
-            Ok(())
-        } else {
-            Err(CannotUseAbility::PoolEmpty)
-        }
+        self.available(amount)?;
+
+        let new_current = self.current() - amount;
+        self.set_current(new_current);
+        Ok(())
     }
 
     /// Replenish the pool by the specified amount.
@@ -180,7 +187,7 @@ impl<A: Abilitylike, P: Pool> AbilityCosts<A, P> {
     #[must_use]
     pub fn available(&self, action: A, pool: &P) -> bool {
         if let Some(cost) = self.get(action) {
-            pool.current() > *cost
+            pool.available(*cost).is_ok()
         } else {
             true
         }
