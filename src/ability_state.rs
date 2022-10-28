@@ -35,27 +35,27 @@ impl<A: Abilitylike> AbilityStateItem<'_, A> {
 
     /// Is this ability both ready and pressed?
     ///
-    /// The error value for "this ability is not ready" will be prioritized over "this ability is not pressed".
+    /// The error value for "this ability is not pressed" will be prioritized over "this ability is not ready".
     #[inline]
     pub fn ready_and_pressed(&self, action: A) -> Result<(), CannotUseAbility> {
-        self.ready(action.clone())?;
-
-        match self.action_state.pressed(action) {
-            true => Ok(()),
-            false => Err(CannotUseAbility::NotPressed),
+        if self.action_state.pressed(action.clone()) {
+            self.ready(action)?;
+            Ok(())
+        } else {
+            Err(CannotUseAbility::NotPressed)
         }
     }
 
     /// Is this ability both ready and just pressed?
     ///
-    /// The error value for "this ability is not ready" will be prioritized over "this ability is not pressed".
+    /// The error value for "this ability is not pressed" will be prioritized over "this ability is not ready".
     #[inline]
     pub fn ready_and_just_pressed(&self, action: A) -> Result<(), CannotUseAbility> {
-        self.ready(action.clone())?;
-
-        match self.action_state.just_pressed(action) {
-            true => Ok(()),
-            false => Err(CannotUseAbility::NotPressed),
+        if self.action_state.just_pressed(action.clone()) {
+            self.ready(action)?;
+            Ok(())
+        } else {
+            Err(CannotUseAbility::NotPressed)
         }
     }
 
@@ -103,27 +103,27 @@ impl<A: Abilitylike> AbilityStateReadOnlyItem<'_, A> {
 
     /// Is this ability both ready and pressed?
     ///
-    /// The error value for "this ability is not ready" will be prioritized over "this ability is not pressed".
+    /// The error value for "this ability is not pressed" will be prioritized over "this ability is not ready".
     #[inline]
     pub fn ready_and_pressed(&self, action: A) -> Result<(), CannotUseAbility> {
-        self.ready(action.clone())?;
-
-        match self.action_state.pressed(action) {
-            true => Ok(()),
-            false => Err(CannotUseAbility::NotPressed),
+        if self.action_state.pressed(action.clone()) {
+            self.ready(action)?;
+            Ok(())
+        } else {
+            Err(CannotUseAbility::NotPressed)
         }
     }
 
     /// Is this ability both ready and just pressed?
     ///
-    /// The error value for "this ability is not ready" will be prioritized over "this ability is not pressed".
+    /// The error value for "this ability is not pressed" will be prioritized over "this ability is not ready".
     #[inline]
     pub fn ready_and_just_pressed(&self, action: A) -> Result<(), CannotUseAbility> {
-        self.ready(action.clone())?;
-
-        match self.action_state.just_pressed(action) {
-            true => Ok(()),
-            false => Err(CannotUseAbility::NotPressed),
+        if self.action_state.just_pressed(action.clone()) {
+            self.ready(action)?;
+            Ok(())
+        } else {
+            Err(CannotUseAbility::NotPressed)
         }
     }
 }
