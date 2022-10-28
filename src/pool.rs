@@ -99,7 +99,7 @@ pub trait Pool: Sized {
     ///
     /// Has no effect if `new_max < Pool::ZERO`.
     /// Returns a [`PoolMaxLessThanZero`] error if this occurs.
-    fn set_max(&mut self, new_max: Self::Quantity) -> Result<(), PoolLessThanZero>;
+    fn set_max(&mut self, new_max: Self::Quantity) -> Result<(), MaxPoolLessThanZero>;
 
     /// Spend the specified amount from the pool, if there is that much available.
     ///
@@ -141,9 +141,9 @@ pub trait Pool: Sized {
 }
 
 /// The maximum value for a [`Pool`] was set to be less than [`Pool::ZERO`].
-#[derive(Debug, Clone, Copy, Error)]
+#[derive(Debug, Clone, Copy, PartialEq, Error)]
 #[error("The maximum quantity that can be stored in a pool must be greater than zero.")]
-pub struct PoolLessThanZero;
+pub struct MaxPoolLessThanZero;
 
 /// Stores the cost (in terms of the [`Pool::Quantity`] of ability) associated with each ability of type `A`.
 #[derive(Component, Debug)]
@@ -283,4 +283,63 @@ pub struct PoolBundle<A: Abilitylike, P: Pool + Component> {
     pub pool: P,
     /// The cost of each ability in terms of this pool
     pub ability_costs: AbilityCosts<A, P>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::premade_pools::mana::{Mana, ManaPool};
+
+    #[test]
+    fn set_pool_cannot_exceed_min() {
+        let mut mana_pool = ManaPool::new_empty(Mana(10.), Mana(0.));
+        mana_pool.set_current(Mana(-3.));
+        assert_eq!(mana_pool.current(), ManaPool::ZERO);
+    }
+
+    #[test]
+    fn set_pool_cannot_exceed_max() {
+        let max_mana = Mana(10.);
+        let mut mana_pool = ManaPool::new_full(max_mana, Mana(0.));
+        mana_pool.set_current(Mana(100.0));
+        assert_eq!(mana_pool.current(), max_mana);
+    }
+
+    #[test]
+    fn reducing_max_decreases_current() {
+        let mut mana_pool = ManaPool::new_full(Mana(10.), Mana(0.));
+        assert_eq!(mana_pool.current(), Mana(10.));
+        mana_pool.set_max(Mana(5.)).unwrap();
+        assert_eq!(mana_pool.current(), Mana(5.));
+    }
+
+    #[test]
+    fn setting_max_below_zero_fails() {
+        let mut mana_pool = ManaPool::new_full(Mana(10.), Mana(0.));
+        let result = mana_pool.set_max(Mana(-7.));
+        assert_eq!(mana_pool.max(), Mana(10.));
+        assert_eq!(result, Err(MaxPoolLessThanZero))
+    }
+
+    #[test]
+    fn expending_depletes_pool() {
+        let mut mana_pool = ManaPool::new_full(Mana(11.), Mana(0.));
+        mana_pool.expend(Mana(5.)).unwrap();
+        assert_eq!(mana_pool.current(), Mana(6.));
+        mana_pool.expend(Mana(5.)).unwrap();
+        assert_eq!(mana_pool.current(), Mana(1.));
+        assert_eq!(
+            mana_pool.expend(Mana(5.)),
+            Err(CannotUseAbility::PoolInsufficient)
+        );
+    }
+
+    #[test]
+    fn pool_can_regenerate() {
+        let mut mana_pool = ManaPool::new_empty(Mana(10.), Mana(1.3));
+        mana_pool.regenerate(Duration::from_secs(1));
+        let expected = Mana(1.3);
+
+        assert!((mana_pool.current() - expected).0.abs() < f32::EPSILON);
+    }
 }

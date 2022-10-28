@@ -3,7 +3,7 @@
 //! These can be annoying due to orphan rules that prevent you from implementing your own methods,
 //! so feel free to copy-paste them (without attribution) into your own source to make new variants.
 
-use crate::pool::{Pool, PoolLessThanZero};
+use crate::pool::{MaxPoolLessThanZero, Pool};
 use bevy::prelude::Component;
 use core::ops::{Div, Mul};
 use derive_more::{Add, AddAssign, Sub, SubAssign};
@@ -80,11 +80,12 @@ pub mod life {
             self.max
         }
 
-        fn set_max(&mut self, new_max: Self::Quantity) -> Result<(), PoolLessThanZero> {
+        fn set_max(&mut self, new_max: Self::Quantity) -> Result<(), MaxPoolLessThanZero> {
             if new_max < Self::ZERO {
-                Err(PoolLessThanZero)
+                Err(MaxPoolLessThanZero)
             } else {
                 self.max = new_max;
+                self.set_current(self.current);
                 Ok(())
             }
         }
@@ -171,11 +172,12 @@ pub mod mana {
             self.max
         }
 
-        fn set_max(&mut self, new_max: Self::Quantity) -> Result<(), PoolLessThanZero> {
+        fn set_max(&mut self, new_max: Self::Quantity) -> Result<(), MaxPoolLessThanZero> {
             if new_max < Self::ZERO {
-                Err(PoolLessThanZero)
+                Err(MaxPoolLessThanZero)
             } else {
                 self.max = new_max;
+                self.set_current(self.current);
                 Ok(())
             }
         }

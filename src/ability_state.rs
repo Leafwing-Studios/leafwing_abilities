@@ -4,7 +4,7 @@
 use crate::{
     charges::ChargeState,
     cooldown::CooldownState,
-    pool::{AbilityCosts, Pool, PoolLessThanZero},
+    pool::{AbilityCosts, MaxPoolLessThanZero, Pool},
     Abilitylike, CannotUseAbility,
 };
 use bevy::{ecs::query::WorldQuery, prelude::Component};
@@ -266,7 +266,7 @@ impl Pool for NullPool {
         Self::ZERO
     }
 
-    fn set_max(&mut self, _new_max: Self::Quantity) -> Result<(), PoolLessThanZero> {
+    fn set_max(&mut self, _new_max: Self::Quantity) -> Result<(), MaxPoolLessThanZero> {
         Ok(())
     }
 
