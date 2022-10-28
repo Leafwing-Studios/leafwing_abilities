@@ -1,5 +1,6 @@
 //! The systems that power each [`InputManagerPlugin`](crate::plugin::InputManagerPlugin).
 
+use crate::pool::Pool;
 use crate::{charges::ChargeState, cooldown::CooldownState, Abilitylike};
 
 use bevy::ecs::{prelude::*, schedule::ShouldRun};
@@ -32,6 +33,23 @@ pub fn tick_cooldowns<A: Abilitylike>(
 
             cooldowns.tick(delta_time, charges);
         }
+    }
+}
+
+/// Regenerates the resource of the [`Pool`] type `P` based on the elapsed [`Time`].
+pub fn regenerate_resource_pool<P: Pool>(
+    mut query: Query<&mut P>,
+    pool_res: Option<ResMut<P>>,
+    time: Res<Time>,
+) {
+    let delta_time = time.delta();
+
+    for mut pool in query.iter_mut() {
+        pool.regenerate(delta_time);
+    }
+
+    if let Some(mut pool) = pool_res {
+        pool.regenerate(delta_time);
     }
 }
 

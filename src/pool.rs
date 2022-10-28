@@ -4,6 +4,8 @@
 //!
 //! Life, mana, energy and rage might all be modelled effectively as pools.
 //! Pools have a maximum value, have a minimum value of zero, can regenerate over time, and can be spent to pay for abilities.
+//!
+//! The [`regenerate_resource_pool`](crate::systems::regenerate_resource_pool) system will regenerate resource pools of a given type if manually added.
 
 use bevy::ecs::prelude::*;
 use bevy::utils::Duration;
@@ -17,7 +19,7 @@ use crate::{Abilitylike, CannotUseAbility};
 ///
 /// Each type that implements this trait should be stored on a component (or, if your actions are globally unique, a resource),
 /// and contains information about the current, max and regeneration rates
-pub trait Pool: Sized {
+pub trait Pool: Component + Sized {
     /// A type that tracks the quantity within a pool.
     ///
     /// Unlike a [`Pool`] type, which stores a max, min
@@ -128,6 +130,9 @@ pub trait Pool: Sized {
     fn set_regen_per_second(&mut self, new_regen_per_second: Self::Quantity);
 
     /// Regenerates this pool according to the elapsed `delta_time`.
+    ///
+    /// Called in the [`regenerate_resource_pool`](crate::systems::regenerate_resource_pool) system.
+    /// Can also be called in your own regeneration systems.
     fn regenerate(&mut self, delta_time: Duration) {
         let pool_regained = self.regen_per_second() * delta_time.as_secs_f32();
         self.replenish(pool_regained)
@@ -265,6 +270,12 @@ impl<A: Abilitylike, P: Pool> AbilityCosts<A, P> {
 /// This is particularly common when working with life totals,
 /// as you want the other functionality of pools (current, max, regen, depletion)
 /// but often cannot spend it on abilities.
+///
+/// # Important Note
+///
+/// Note that resource pools are not controlled by [`AbilityPlugin`](crate::plugin::AbilityPlugin).
+/// If you want regeneration to occur automatically, add [`regenerate_resource_pool`](crate::systems::regenerate_resource_pool)
+/// to your schedule.
 #[derive(Bundle)]
 pub struct PoolBundle<A: Abilitylike, P: Pool + Component> {
     /// The resource pool used to pay for abilities
