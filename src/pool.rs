@@ -5,11 +5,12 @@
 //! Life, mana, energy and rage might all be modelled effectively as pools.
 //! Pools have a maximum value, have a minimum value of zero, can regenerate over time, and can be spent to pay for abilities.
 
-use bevy::utils::Duration;
+use bevy::ecs::prelude::*;
+use bevy::utils::{Duration, HashMap};
 use core::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
 use thiserror::Error;
 
-use crate::CannotUseAbility;
+use crate::{Abilitylike, CannotUseAbility};
 
 /// A reservoir of a resource that can be used to pay for abilities, or keep track of character state.
 ///
@@ -34,7 +35,10 @@ pub trait Pool:
         + Div<f32, Output = Self::Quantity>
         + PartialEq
         + PartialOrd
-        + Copy;
+        + Copy
+        + Send
+        + Sync
+        + 'static;
 
     /// The minimum value of the pool type.
     ///
@@ -132,3 +136,25 @@ pub trait Pool:
 #[derive(Debug, Clone, Copy, Error)]
 #[error("The maximum quantity that can be stored in a pool must be greater than zero.")]
 pub struct PoolLessThanZero;
+
+/// Stores the cost (in terms of the [`Pool::Quantity`] of ability) associated with each ability of type `A`.
+#[derive(Component, Clone, Debug)]
+pub struct AbilityCosts<A: Abilitylike, P: Pool> {
+    map: HashMap<A, P::Quantity>,
+}
+
+/// Stores a resource pool and the associated costs for each ability.
+///
+/// Note that if your abilities do not cost the given resource,
+/// you can still add your [`Pool`] type as a component.
+///
+/// This is particularly common when working with life totals,
+/// as you want the other functionality of pools (current, max, regen, depletion)
+/// but often cannot spend it on abilities.
+#[derive(Bundle)]
+pub struct PoolBundle<A: Abilitylike, P: Pool + Component> {
+    /// The resource pool used to pay for abilities
+    pub pool: P,
+    /// The cost of each ability in terms of this pool
+    pub ability_costs: AbilityCosts<A, P>,
+}
