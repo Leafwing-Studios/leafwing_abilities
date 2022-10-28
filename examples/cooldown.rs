@@ -130,11 +130,11 @@ fn handle_add_one_ability(
     let (actions, mut cooldowns) = query.single_mut();
     // See the handle_double_cookies system for a more ergonomic, robust (and implicit) way to handle this pattern
     if actions.just_pressed(CookieAbility::AddOne) {
-        // Note that checking only the CooldownState component may miss other critical checks for if the ability can be used
-        if cooldowns.ready(CookieAbility::AddOne) {
+        // Calling .trigger checks if the cooldown can be used, then triggers it if so
+        // Note that this may miss other important limitations on when abilities can be used
+        if cooldowns.trigger(CookieAbility::AddOne).is_ok() {
+            // The result returned should be checked to decide how to respond
             score.0 += 1;
-            // Make sure to
-            cooldowns.trigger(CookieAbility::AddOne);
         }
     }
 }

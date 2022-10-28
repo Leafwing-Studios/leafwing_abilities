@@ -12,6 +12,7 @@ use crate::{Abilitylike, CannotUseAbility};
 ///
 /// ```rust
 /// use leafwing_abilities::prelude::*;
+/// use leafwing_abilities::premade_pools::mana::{Mana, ManaPool};
 /// use leafwing_input_manager::Actionlike;
 ///
 /// #[derive(Actionlike, Abilitylike, Clone)]
@@ -45,20 +46,35 @@ use crate::{Abilitylike, CannotUseAbility};
 ///             (Action::Spell, Cooldown::from_secs(4.5)),
 ///         ])
 ///     }
+///
+///     fn mana_costs() -> AbilityCosts<Action, ManaPool> {
+///         // Provide the Pool::Quantity value when setting costs
+///         AbilityCosts::new([
+///             (Action::Spell, Mana(10.)),
+///         ])
+///     }
 /// }
 ///
 /// // In a real game you'd spawn a bundle with the appropriate components
-/// let mut bundle = AbilitiesBundle {
+/// let mut abilities_bundle = AbilitiesBundle {
 ///     cooldowns: Action::cooldowns(),
 ///     charges: Action::charges(),
 ///     ..Default::default()
 /// };
 ///
+/// // You can also define resource pools using a seperate bundle
+/// // Typically, you'll want to nest both of these bundles under a custom Bundle type for your characters
+/// let mut mana_bundle = PoolBundle {
+///     // Max mana of 1000., regen rate of 10.
+///     pool: ManaPool::new_full(Mana(100.0), Mana(1.0)),
+///     ability_costs: Action::mana_costs(),     
+/// };
+///
 /// // Then, you can check if an action is ready to be used
 /// // Consider using the `AbilityState` `WorldQuery` type instead for convenience!
-/// if Action::Spell.ready(&bundle.charges, &bundle.cooldowns).is_ok() {
+/// if Action::Spell.ready(&abilities_bundle.charges, &abilities_bundle.cooldowns, Some(&mana_bundle.pool), Some(&mana_bundle.ability_costs)).is_ok() {
 ///     // When you use an action, remember to trigger it!
-///     Action::Spell.trigger(&mut bundle.charges, &mut bundle.cooldowns);
+///     Action::Spell.trigger(&mut abilities_bundle.charges, &mut abilities_bundle.cooldowns, Some(&mut mana_bundle.pool), Some(&mut mana_bundle.ability_costs));
 /// }
 /// ```
 #[derive(Component, Clone, PartialEq, Eq, Debug)]

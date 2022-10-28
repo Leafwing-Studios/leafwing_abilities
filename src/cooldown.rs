@@ -40,14 +40,14 @@ use std::marker::PhantomData;
 /// action_state.press(Action::Jump);
 ///
 /// // This will only perform a limited check; consider using the `Abilitylike::ready` method instead
-/// if action_state.just_pressed(Action::Jump) && cooldowns.ready(Action::Jump) {
+/// if action_state.just_pressed(Action::Jump) && cooldowns.ready(Action::Jump).is_ok() {
 ///    // Actually do the jumping thing here
 ///    // Remember to actually begin the cooldown if you jumped!
 ///    cooldowns.trigger(Action::Jump);
 /// }
 ///
 /// // We just jumped, so the cooldown isn't ready yet
-/// assert!(!cooldowns.ready(Action::Jump));
+/// assert_eq!(cooldowns.ready(Action::Jump), Err(CannotUseAbility::OnCooldown));
 /// ```
 #[derive(Component, Debug, Clone, PartialEq, Eq)]
 pub struct CooldownState<A: Abilitylike> {
@@ -240,6 +240,7 @@ impl<A: Abilitylike> CooldownState<A> {
 /// ```rust
 /// use bevy::utils::Duration;
 /// use leafwing_abilities::cooldown::Cooldown;
+/// use leafwing_abilities::CannotUseAbility;
 ///
 /// let mut cooldown = Cooldown::new(Duration::from_secs(3));
 /// assert_eq!(cooldown.remaining(), Duration::ZERO);
@@ -248,14 +249,14 @@ impl<A: Abilitylike> CooldownState<A> {
 /// assert_eq!(cooldown.remaining(), Duration::from_secs(3));
 ///
 /// cooldown.tick(Duration::from_secs(1), &mut None);
-/// assert!(!cooldown.ready());
+/// assert_eq!(cooldown.ready(), Err(CannotUseAbility::OnCooldown));
 ///
 /// cooldown.tick(Duration::from_secs(5), &mut None);
 /// let triggered = cooldown.trigger();
-/// assert!(triggered);
+/// assert!(triggered.is_ok());
 ///
 /// cooldown.refresh();
-/// assert!(cooldown.ready());
+/// assert!(cooldown.ready().is_ok());
 /// ```
 #[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct Cooldown {
@@ -444,17 +445,17 @@ mod tick_tests {
     fn cooldowns_are_ready_when_refreshed() {
         let mut cooldown = Cooldown::from_secs(1.);
         assert!(cooldown.ready().is_ok());
-        cooldown.trigger();
+        let _ = cooldown.trigger();
         assert_eq!(cooldown.ready(), Err(CannotUseAbility::OnCooldown));
         cooldown.refresh();
-        assert_eq!(cooldown.ready(), Err(CannotUseAbility::OnCooldown));
+        assert!(cooldown.ready().is_ok());
     }
 
     #[test]
     fn ticking_changes_cooldown() {
         let cooldown = Cooldown::new(Duration::from_millis(1000));
         let mut cloned_cooldown = cooldown.clone();
-        cloned_cooldown.trigger();
+        let _ = cloned_cooldown.trigger();
         assert!(cooldown != cloned_cooldown);
 
         cloned_cooldown.tick(Duration::from_millis(123), &mut None);
@@ -464,7 +465,7 @@ mod tick_tests {
     #[test]
     fn cooldowns_reset_after_being_ticked() {
         let mut cooldown = Cooldown::from_secs(1.);
-        cooldown.trigger();
+        let _ = cooldown.trigger();
         assert_eq!(cooldown.ready(), Err(CannotUseAbility::OnCooldown));
 
         cooldown.tick(Duration::from_secs(3), &mut None);
