@@ -5,6 +5,7 @@
 ### Usability
 
 - All methods and functions that returned a bool now return a `Result<(), CannotUseAbility>` which explains why an action failed.
+- the `trigger_action` and `action_ready` functions were renamed to `trigger_ability` and `ability_ready`
 
 ## Version 0.1
 

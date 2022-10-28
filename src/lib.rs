@@ -72,7 +72,7 @@ pub trait Abilitylike: Actionlike {
     /// If this ability has a cooldown but no charges, the cooldown must be ready.
     /// Otherwise, returns [`Ok(())`].
     ///
-    /// Calls [`action_ready`], which can be used manually if you already know the [`Charges`] and [`Cooldown`] of interest.
+    /// Calls [`ability_ready`], which can be used manually if you already know the [`Charges`] and [`Cooldown`] of interest.
     fn ready(
         &self,
         charges: &ChargeState<Self>,
@@ -81,7 +81,7 @@ pub trait Abilitylike: Actionlike {
         let charges = charges.get(self.clone());
         let cooldowns = cooldowns.get(self.clone());
 
-        action_ready(charges, cooldowns)
+        ability_ready(charges, cooldowns)
     }
 
     /// Triggers this ability, depleting a charge if available.
@@ -89,7 +89,7 @@ pub trait Abilitylike: Actionlike {
     /// Returns `true` if the ability could be used, and `false` if it could not be.
     /// Abilities can only be used if they are ready.
     ///     
-    /// Calls [`trigger_action`], which can be used manually if you already know the [`Charges`] and [`Cooldown`] of interest.
+    /// Calls [`trigger_ability`], which can be used manually if you already know the [`Charges`] and [`Cooldown`] of interest.
     fn trigger(
         &self,
         charges: &mut ChargeState<Self>,
@@ -98,7 +98,7 @@ pub trait Abilitylike: Actionlike {
         let charges = charges.get_mut(self.clone());
         let cooldowns = cooldowns.get_mut(self.clone());
 
-        trigger_action(charges, cooldowns)
+        trigger_ability(charges, cooldowns)
     }
 }
 
@@ -124,13 +124,13 @@ pub enum CannotUseAbility {
     PoolEmpty,
 }
 
-/// Checks if a [`Charges`], [`Cooldown`] pair associated with an action is ready to use.
+/// Checks if a [`Charges`], [`Cooldown`] pair associated with an ability is ready to use.
 ///
-/// If this action has charges, at least one charge must be available.
-/// If this action has a cooldown but no charges, the cooldown must be ready.
+/// If this ability has charges, at least one charge must be available.
+/// If this ability has a cooldown but no charges, the cooldown must be ready.
 /// Otherwise, returns `true`.
 #[inline]
-pub fn action_ready(
+pub fn ability_ready(
     charges: &Option<Charges>,
     cooldown: &Option<Cooldown>,
 ) -> Result<(), CannotUseAbility> {
@@ -151,15 +151,15 @@ pub fn action_ready(
     }
 }
 
-/// Triggers an implicit action, depleting a charge if available.
+/// Triggers an implicit ability, depleting a charge if available.
 ///
 /// If no `charges` is [`None`], this will be based off the [`Cooldown`] alone, triggering it if possible.
 #[inline]
-pub fn trigger_action(
+pub fn trigger_ability(
     charges: &mut Option<Charges>,
     cooldown: &mut Option<Cooldown>,
 ) -> Result<(), CannotUseAbility> {
-    action_ready(charges, cooldown)?;
+    ability_ready(charges, cooldown)?;
 
     if let Some(ref mut charges) = charges {
         charges.expend()?;
@@ -171,6 +171,9 @@ pub fn trigger_action(
 }
 
 /// This [`Bundle`] allows entities to manage their [`Abilitylike`] actions effectively.
+///
+/// Commonly combined with an [`InputManagerBundle`](leafwing_input_manager::InputManagerBundle),
+/// which tracks whether or not actions are pressed.
 ///
 /// Use with [`AbilityPlugin`](crate::plugin::AbilityPlugin), providing the same enum type to both.
 #[derive(Bundle, Clone, Debug, PartialEq, Eq)]
@@ -195,130 +198,130 @@ impl<A: Abilitylike> Default for AbilitiesBundle<A> {
 mod tests {
     use crate::charges::Charges;
     use crate::cooldown::Cooldown;
-    use crate::{action_ready, trigger_action, CannotUseAbility};
+    use crate::{ability_ready, trigger_ability, CannotUseAbility};
 
     #[test]
-    fn action_ready_no_cooldown_no_charges() {
-        assert!(action_ready(&None, &None).is_ok());
+    fn ability_ready_no_cooldown_no_charges() {
+        assert!(ability_ready(&None, &None).is_ok());
     }
 
     #[test]
-    fn action_ready_just_cooldown() {
+    fn ability_ready_just_cooldown() {
         let mut cooldown = Some(Cooldown::from_secs(1.));
-        assert!(action_ready(&None, &cooldown).is_ok());
+        assert!(ability_ready(&None, &cooldown).is_ok());
 
         cooldown.as_mut().map(|c| c.trigger());
         assert_eq!(
-            action_ready(&None, &cooldown),
+            ability_ready(&None, &cooldown),
             Err(CannotUseAbility::OnCooldown)
         );
     }
 
     #[test]
-    fn action_ready_just_charges() {
+    fn ability_ready_just_charges() {
         let mut charges = Some(Charges::simple(1));
 
-        assert!(action_ready(&charges, &None).is_ok());
+        assert!(ability_ready(&charges, &None).is_ok());
 
         charges.as_mut().map(|c| c.expend());
         assert_eq!(
-            action_ready(&charges, &None),
+            ability_ready(&charges, &None),
             Err(crate::CannotUseAbility::NoCharges)
         );
     }
 
     #[test]
-    fn action_ready_cooldown_and_charges() {
+    fn ability_ready_cooldown_and_charges() {
         let mut charges = Some(Charges::simple(1));
         let mut cooldown = Some(Cooldown::from_secs(1.));
         // Both available
-        assert!(action_ready(&charges, &cooldown).is_ok());
+        assert!(ability_ready(&charges, &cooldown).is_ok());
 
         // Out of charges, cooldown ready
         charges.as_mut().map(|c| c.expend());
         assert_eq!(
-            action_ready(&charges, &cooldown),
+            ability_ready(&charges, &cooldown),
             Err(CannotUseAbility::NoCharges)
         );
 
         // Just charges
         charges.as_mut().map(|c| c.replenish());
         cooldown.as_mut().map(|c| c.trigger());
-        assert!(action_ready(&charges, &cooldown).is_ok());
+        assert!(ability_ready(&charges, &cooldown).is_ok());
 
         // Neither
         charges.as_mut().map(|c| c.expend());
         assert_eq!(
-            action_ready(&charges, &cooldown),
+            ability_ready(&charges, &cooldown),
             Err(CannotUseAbility::NoCharges)
         );
     }
 
     #[test]
-    fn trigger_action_no_cooldown_no_charges() {
-        let outcome = trigger_action(&mut None, &mut None);
+    fn trigger_ability_no_cooldown_no_charges() {
+        let outcome = trigger_ability(&mut None, &mut None);
         assert!(outcome.is_ok());
     }
 
     #[test]
-    fn trigger_action_just_cooldown() {
+    fn trigger_ability_just_cooldown() {
         let mut cooldown = Some(Cooldown::from_secs(1.));
-        assert!(trigger_action(&mut None, &mut cooldown).is_ok());
+        assert!(trigger_ability(&mut None, &mut cooldown).is_ok());
 
         cooldown.as_mut().map(|c| c.trigger());
         assert_eq!(
-            trigger_action(&mut None, &mut cooldown),
+            trigger_ability(&mut None, &mut cooldown),
             Err(CannotUseAbility::OnCooldown)
         );
         assert_eq!(
-            action_ready(&None, &cooldown),
+            ability_ready(&None, &cooldown),
             Err(CannotUseAbility::OnCooldown)
         );
     }
 
     #[test]
-    fn trigger_action_just_charges() {
+    fn trigger_ability_just_charges() {
         let mut charges = Some(Charges::simple(1));
 
-        assert!(trigger_action(&mut charges, &mut None).is_ok());
+        assert!(trigger_ability(&mut charges, &mut None).is_ok());
 
         charges.as_mut().map(|c| c.expend());
         assert_eq!(
-            trigger_action(&mut charges, &mut None),
+            trigger_ability(&mut charges, &mut None),
             Err(CannotUseAbility::NoCharges)
         );
         assert_eq!(
-            action_ready(&charges, &None),
+            ability_ready(&charges, &None),
             Err(CannotUseAbility::NoCharges)
         );
     }
 
     #[test]
-    fn trigger_action_cooldown_and_charges() {
+    fn trigger_ability_cooldown_and_charges() {
         let mut charges = Some(Charges::simple(1));
         let mut cooldown = Some(Cooldown::from_secs(1.));
         // Both available
-        assert!(trigger_action(&mut charges, &mut cooldown).is_ok());
+        assert!(trigger_ability(&mut charges, &mut cooldown).is_ok());
         assert_eq!(
-            action_ready(&charges, &cooldown),
+            ability_ready(&charges, &cooldown),
             Err(CannotUseAbility::NoCharges)
         );
 
         // None available
         assert_eq!(
-            trigger_action(&mut charges, &mut cooldown),
+            trigger_ability(&mut charges, &mut cooldown),
             Err(CannotUseAbility::NoCharges)
         );
 
         // Just charges
         charges.as_mut().map(|c| c.replenish());
-        assert!(trigger_action(&mut charges, &mut cooldown).is_ok());
+        assert!(trigger_ability(&mut charges, &mut cooldown).is_ok());
 
         // Just cooldown
         charges.as_mut().map(|c| c.expend());
         cooldown.as_mut().map(|c| c.refresh());
         assert_eq!(
-            trigger_action(&mut charges, &mut cooldown),
+            trigger_ability(&mut charges, &mut cooldown),
             Err(CannotUseAbility::NoCharges)
         );
     }
