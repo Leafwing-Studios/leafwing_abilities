@@ -14,6 +14,7 @@ mod ability_state;
 pub mod charges;
 pub mod cooldown;
 pub mod plugin;
+pub mod pool;
 pub mod systems;
 pub use ability_state::*;
 
@@ -24,8 +25,10 @@ pub use leafwing_abilities_macros::Abilitylike;
 pub mod prelude {
     pub use crate::charges::{ChargeState, Charges};
     pub use crate::cooldown::{Cooldown, CooldownState};
+    pub use crate::pool::Pool;
 
     pub use crate::plugin::AbilityPlugin;
+    pub use crate::CannotUseAbility;
     pub use crate::{AbilitiesBundle, AbilityState, Abilitylike};
 }
 
@@ -114,6 +117,9 @@ pub enum CannotUseAbility {
     /// The [`Cooldown`] of this ability was not ready
     #[error("Cooldown not ready.")]
     OnCooldown,
+    /// Not enough resources from the corresponding [`Pool`]s are available
+    #[error("Not enough resources.")]
+    PoolEmpty,
 }
 
 /// Checks if a [`Charges`], [`Cooldown`] pair associated with an action is ready to use.
