@@ -2,7 +2,7 @@
 
 use crate::{
     charges::{ChargeState, Charges},
-    Abilitylike,
+    Abilitylike, CannotUseAbility,
 };
 
 use bevy::ecs::prelude::Component;
@@ -129,32 +129,30 @@ impl<A: Abilitylike> CooldownState<A> {
 
     /// Can the corresponding `action` be used?
     ///
-    /// This will be `true` if the underlying [`Cooldown::ready`] call is true,
+    /// This will be `Ok` if the underlying [`Cooldown::ready`] call is true,
     /// or if no cooldown is stored for this action.
     #[inline]
     #[must_use]
-    pub fn ready(&self, action: A) -> bool {
-        if !self.gcd_ready() {
-            return false;
-        }
+    pub fn ready(&self, action: A) -> Result<(), CannotUseAbility> {
+        self.gcd_ready()?;
 
         if let Some(cooldown) = self.get(action) {
             cooldown.ready()
         } else {
-            true
+            Ok(())
         }
     }
 
     /// Has the global cooldown for actions of type `A` expired?
     ///
-    /// Returns `true` if no GCD is set.
+    /// Returns `Ok(())` if no GCD is set.
     #[inline]
     #[must_use]
-    pub fn gcd_ready(&self) -> bool {
+    pub fn gcd_ready(&self) -> Result<(), CannotUseAbility> {
         if let Some(global_cooldown) = self.global_cooldown.as_ref() {
             global_cooldown.ready()
         } else {
-            true
+            Ok(())
         }
     }
 
@@ -330,8 +328,11 @@ impl Cooldown {
     ///
     /// This will be true if and only if at least one charge is available.
     /// For cooldowns without charges, this will be true if `time_remaining` is [`Duration::Zero`].
-    pub fn ready(&self) -> bool {
-        self.elapsed_time >= self.max_time
+    pub fn ready(&self) -> Result<(), CannotUseAbility> {
+        match self.elapsed_time >= self.max_time {
+            true => Ok(()),
+            false => Err(CannotUseAbility::OnCooldown),
+        }
     }
 
     /// Refreshes the cooldown, causing the underlying action to be ready to use immediately.
@@ -346,16 +347,14 @@ impl Cooldown {
     ///
     /// If this cooldown has multiple charges, only one will be consumed.
     ///
-    /// Returns a boolean indicating whether the cooldown was ready.
-    /// If the cooldown was not ready, `false` is returned and this call has no effect.
+    /// Returns a result indicating whether the cooldown was ready.
+    /// If the cooldown was not ready, [`CannotUseAbility::OnCooldown`] is returned and this call has no effect.
     #[inline]
-    pub fn trigger(&mut self) -> bool {
-        if self.ready() {
-            self.elapsed_time = Duration::ZERO;
-            true
-        } else {
-            false
-        }
+    pub fn trigger(&mut self) -> Result<(), CannotUseAbility> {
+        self.ready()?;
+        self.elapsed_time = Duration::ZERO;
+
+        Ok(())
     }
 
     /// Returns the time that it will take for this action to be ready to use again after being triggered.
@@ -434,17 +433,17 @@ mod tick_tests {
     #[test]
     fn cooldowns_start_ready() {
         let cooldown = Cooldown::from_secs(1.);
-        assert!(cooldown.ready());
+        assert!(cooldown.ready().is_ok());
     }
 
     #[test]
     fn cooldowns_are_ready_when_refreshed() {
         let mut cooldown = Cooldown::from_secs(1.);
-        assert!(cooldown.ready());
+        assert!(cooldown.ready().is_ok());
         cooldown.trigger();
-        assert!(!cooldown.ready());
+        assert_eq!(cooldown.ready(), Err(CannotUseAbility::OnCooldown));
         cooldown.refresh();
-        assert!(cooldown.ready());
+        assert_eq!(cooldown.ready(), Err(CannotUseAbility::OnCooldown));
     }
 
     #[test]
@@ -462,10 +461,10 @@ mod tick_tests {
     fn cooldowns_reset_after_being_ticked() {
         let mut cooldown = Cooldown::from_secs(1.);
         cooldown.trigger();
-        assert!(!cooldown.ready());
+        assert_eq!(cooldown.ready(), Err(CannotUseAbility::OnCooldown));
 
         cooldown.tick(Duration::from_secs(3), &mut None);
-        assert!(cooldown.ready());
+        assert!(cooldown.ready().is_ok());
     }
 
     #[test]
