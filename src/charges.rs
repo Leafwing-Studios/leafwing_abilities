@@ -56,7 +56,7 @@ use crate::Abilitylike;
 ///
 /// // Then, you can check if an action is ready to be used
 /// // Consider using the `AbilityState` `WorldQuery` type instead for convenience!
-/// if Action::Spell.ready(&bundle.charges, &bundle.cooldowns) {
+/// if Action::Spell.ready(&bundle.charges, &bundle.cooldowns).is_ok() {
 ///     // When you use an action, remember to trigger it!
 ///     Action::Spell.trigger(&mut bundle.charges, &mut bundle.cooldowns);
 /// }

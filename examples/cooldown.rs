@@ -146,14 +146,20 @@ fn handle_double_cookies_ability(
     let mut cookie_ability_state = query.single_mut();
     // Checks whether the action is pressed, and if it is ready.
     // If so, triggers the ability, resetting its cooldown.
-    if cookie_ability_state.trigger_if_just_pressed(CookieAbility::DoubleCookies) {
+    if cookie_ability_state
+        .trigger_if_just_pressed(CookieAbility::DoubleCookies)
+        .is_ok()
+    {
         score.0 *= 2;
     }
 }
 
 fn change_cookie_color_when_clicked(mut query: Query<(&mut UiColor, AbilityState<CookieAbility>)>) {
     let (mut color, ability_state) = query.single_mut();
-    if ability_state.ready_and_just_pressed(CookieAbility::AddOne) {
+    if ability_state
+        .ready_and_just_pressed(CookieAbility::AddOne)
+        .is_ok()
+    {
         *color = CookieBundle::COOKIE_CLICKED_COLOR.into();
     }
 }
