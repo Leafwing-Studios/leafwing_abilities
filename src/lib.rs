@@ -8,6 +8,7 @@ use bevy::ecs::prelude::*;
 use charges::{ChargeState, Charges};
 use cooldown::Cooldown;
 use leafwing_input_manager::Actionlike;
+use thiserror::Error;
 
 mod ability_state;
 pub mod charges;
@@ -90,6 +91,17 @@ pub trait Abilitylike: Actionlike {
 
         trigger_action(charges, cooldowns)
     }
+}
+
+/// An [`Error`](std::error::Error) type that explains why an ability could not be used.
+#[derive(Error, Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CannotUseAbility {
+    /// The [`Cooldown`] of this ability was not ready
+    #[error("Cooldown not ready.")]
+    OnCooldown,
+    /// There were no [`Charges`] available for this ability
+    #[error("No charges available.")]
+    NoCharges,
 }
 
 /// Checks if a [`Charges`], [`Cooldown`] pair associated with an action is ready to use.
