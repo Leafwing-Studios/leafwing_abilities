@@ -18,7 +18,9 @@ opt-level = 3
 members = ["./", "tools/ci", "macros"]
 
 [features]
-default = []
+default = ["premade_pools"]
+# Premade life and mana resource pools to get you started
+premade_pools = []
 
 [dependencies]
 bevy = {version = "0.8", default-features = false, features = ["serialize", "bevy_gilrs"]}
@@ -27,6 +29,7 @@ leafwing-input-manager = "0.6"
 
 leafwing_abilities_macros = { path = "macros", version = "0.2" }
 thiserror = "1.0.37"
+derive_more = "0.99.17"
 
 [dev-dependencies]
 bevy = {version = "0.8", default-features = false, features = ["bevy_asset", "bevy_sprite", "bevy_text", "bevy_ui", "bevy_render", "bevy_core_pipeline", "x11"]}

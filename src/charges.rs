@@ -1,10 +1,11 @@
 //! Charges are "uses of an action".
 //! Actions may only be used if at least one charge is available.
+//! Unlike pools, charges are not shared across abilities.
 
 use bevy::ecs::prelude::Component;
 use std::marker::PhantomData;
 
-use crate::Abilitylike;
+use crate::{Abilitylike, CannotUseAbility};
 
 /// A component / resource that stores the [`Charges`] for each [`Abilitylike`] action of type `A`.
 ///
@@ -12,6 +13,7 @@ use crate::Abilitylike;
 ///
 /// ```rust
 /// use leafwing_abilities::prelude::*;
+/// use leafwing_abilities::premade_pools::mana::{Mana, ManaPool};
 /// use leafwing_input_manager::Actionlike;
 ///
 /// #[derive(Actionlike, Abilitylike, Clone)]
@@ -45,20 +47,35 @@ use crate::Abilitylike;
 ///             (Action::Spell, Cooldown::from_secs(4.5)),
 ///         ])
 ///     }
+///
+///     fn mana_costs() -> AbilityCosts<Action, ManaPool> {
+///         // Provide the Pool::Quantity value when setting costs
+///         AbilityCosts::new([
+///             (Action::Spell, Mana(10.)),
+///         ])
+///     }
 /// }
 ///
 /// // In a real game you'd spawn a bundle with the appropriate components
-/// let mut bundle = AbilitiesBundle {
+/// let mut abilities_bundle = AbilitiesBundle {
 ///     cooldowns: Action::cooldowns(),
 ///     charges: Action::charges(),
 ///     ..Default::default()
 /// };
 ///
+/// // You can also define resource pools using a seperate bundle
+/// // Typically, you'll want to nest both of these bundles under a custom Bundle type for your characters
+/// let mut mana_bundle = PoolBundle {
+///     // Max mana of 1000., regen rate of 10.
+///     pool: ManaPool::new_full(Mana(100.0), Mana(1.0)),
+///     ability_costs: Action::mana_costs(),     
+/// };
+///
 /// // Then, you can check if an action is ready to be used
 /// // Consider using the `AbilityState` `WorldQuery` type instead for convenience!
-/// if Action::Spell.ready(&bundle.charges, &bundle.cooldowns).is_ok() {
+/// if Action::Spell.ready(&abilities_bundle.charges, &abilities_bundle.cooldowns, Some(&mana_bundle.pool), Some(&mana_bundle.ability_costs)).is_ok() {
 ///     // When you use an action, remember to trigger it!
-///     Action::Spell.trigger(&mut bundle.charges, &mut bundle.cooldowns);
+///     Action::Spell.trigger(&mut abilities_bundle.charges, &mut abilities_bundle.cooldowns, Some(&mut mana_bundle.pool), Some(&mut mana_bundle.ability_costs));
 /// }
 /// ```
 #[derive(Component, Clone, PartialEq, Eq, Debug)]
@@ -140,7 +157,7 @@ impl<A: Abilitylike> ChargeState<A> {
     ///     Dash,
     /// }
     ///
-    /// let input_map = ChargeState::new([
+    /// let charge_state = ChargeState::new([
     ///     (Action::Shoot, Charges::replenish_all(6)),
     ///     (Action::Dash, Charges::replenish_one(2)),
     /// ]);
@@ -174,11 +191,11 @@ impl<A: Abilitylike> ChargeState<A> {
     ///
     /// Returns `true` if the underlying [`Charges`] is [`None`].
     #[inline]
-    pub fn expend(&mut self, action: A) -> bool {
+    pub fn expend(&mut self, action: A) -> Result<(), CannotUseAbility> {
         if let Some(charges) = self.get_mut(action) {
             charges.expend()
         } else {
-            true
+            Ok(())
         }
     }
 
@@ -356,16 +373,16 @@ impl Charges {
 
     /// Spends one charge for `action` if able.
     ///
-    /// Returns a boolean indicating whether a charge was available.
-    /// If no charges are available, `false` is returned and this call has no effect.
+    /// Returns a [`Result`] indicating whether a charge was available.
+    /// If no charges are available, [`CannotUseAbility::NoCharges`] is returned and this call has no effect.
     #[inline]
-    pub fn expend(&mut self) -> bool {
+    pub fn expend(&mut self) -> Result<(), CannotUseAbility> {
         if self.current == 0 {
-            return false;
+            return Err(CannotUseAbility::NoCharges);
         }
 
         self.current = self.current.saturating_sub(1);
-        true
+        Ok(())
     }
 
     /// Replenishes charges of `action`, up to its max charges.
@@ -407,11 +424,11 @@ mod tests {
     #[test]
     fn charges_deplete() {
         let mut charges = Charges::simple(2);
-        charges.expend();
+        charges.expend().unwrap();
         assert_eq!(charges.charges(), 1);
-        charges.expend();
+        charges.expend().unwrap();
         assert_eq!(charges.charges(), 0);
-        charges.expend();
+        assert_eq!(charges.expend(), Err(CannotUseAbility::NoCharges));
         assert_eq!(charges.charges(), 0);
     }
 

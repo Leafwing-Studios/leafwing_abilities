@@ -61,9 +61,9 @@ fn cooldowns_on_entity() {
     let mut query_state = app.world.query::<&mut CooldownState<Action>>();
     let mut cooldowns: Mut<CooldownState<Action>> = query_state.single_mut(&mut app.world);
     for action in Action::variants() {
-        assert!(cooldowns.ready(action));
+        assert!(cooldowns.ready(action).is_ok());
         // Trigger all the cooldowns once
-        cooldowns.trigger(action);
+        let _ = cooldowns.trigger(action);
     }
 
     app.update();
@@ -71,9 +71,9 @@ fn cooldowns_on_entity() {
     // No waiting
     let mut query_state = app.world.query::<&CooldownState<Action>>();
     let cooldowns: &CooldownState<Action> = query_state.single(&mut app.world);
-    assert!(cooldowns.ready(NoCooldown));
-    assert!(!cooldowns.ready(Short));
-    assert!(!cooldowns.ready(Long));
+    assert!(cooldowns.ready(NoCooldown).is_ok());
+    assert_eq!(cooldowns.ready(Short), Err(CannotUseAbility::OnCooldown));
+    assert_eq!(cooldowns.ready(Long), Err(CannotUseAbility::OnCooldown));
 
     sleep(Duration::from_secs_f32(0.2));
     app.update();
@@ -81,9 +81,9 @@ fn cooldowns_on_entity() {
     // Short wait
     let mut query_state = app.world.query::<&CooldownState<Action>>();
     let cooldowns: &CooldownState<Action> = query_state.single(&mut app.world);
-    assert!(cooldowns.ready(NoCooldown));
-    assert!(cooldowns.ready(Short));
-    assert!(!cooldowns.ready(Long));
+    assert!(cooldowns.ready(NoCooldown).is_ok());
+    assert!(cooldowns.ready(Short).is_ok());
+    assert_eq!(cooldowns.ready(Long), Err(CannotUseAbility::OnCooldown));
 }
 
 #[test]
@@ -99,26 +99,26 @@ fn cooldowns_in_resource() {
     // Cooldown start ready
     let mut cooldowns: Mut<CooldownState<Action>> = app.world.resource_mut();
     for action in Action::variants() {
-        assert!(cooldowns.ready(action));
-        cooldowns.trigger(action);
+        assert!(cooldowns.ready(action).is_ok());
+        let _ = cooldowns.trigger(action);
     }
 
     app.update();
 
     // No waiting
     let cooldowns: &CooldownState<Action> = app.world.resource();
-    assert!(cooldowns.ready(NoCooldown));
-    assert!(!cooldowns.ready(Short));
-    assert!(!cooldowns.ready(Long));
+    assert!(cooldowns.ready(NoCooldown).is_ok());
+    assert_eq!(cooldowns.ready(Short), Err(CannotUseAbility::OnCooldown));
+    assert_eq!(cooldowns.ready(Long), Err(CannotUseAbility::OnCooldown));
 
     sleep(Duration::from_secs_f32(0.2));
     app.update();
 
     // Short wait
     let cooldowns: &CooldownState<Action> = app.world.resource();
-    assert!(cooldowns.ready(NoCooldown));
-    assert!(cooldowns.ready(Short));
-    assert!(!cooldowns.ready(Long));
+    assert!(cooldowns.ready(NoCooldown).is_ok());
+    assert!(cooldowns.ready(Short).is_ok());
+    assert_eq!(cooldowns.ready(Long), Err(CannotUseAbility::OnCooldown));
 }
 
 #[test]
@@ -133,7 +133,7 @@ fn global_cooldowns_tick() {
     let initial_gcd = Some(Cooldown::new(Duration::from_micros(15)));
     cooldowns.global_cooldown = initial_gcd.clone();
     // Trigger the GCD
-    cooldowns.trigger(Action::Long);
+    let _ = cooldowns.trigger(Action::Long);
 
     app.update();
 
@@ -155,16 +155,19 @@ fn global_cooldown_blocks_cooldownless_actions() {
     let mut cooldowns: Mut<CooldownState<Action>> = app.world.resource_mut();
     cooldowns.global_cooldown = Some(Cooldown::new(Duration::from_micros(15)));
 
-    assert!(cooldowns.ready(Action::NoCooldown));
+    assert!(cooldowns.ready(Action::NoCooldown).is_ok());
 
-    cooldowns.trigger(Action::NoCooldown);
-    assert!(!cooldowns.ready(Action::NoCooldown));
+    let _ = cooldowns.trigger(Action::NoCooldown);
+    assert_eq!(
+        cooldowns.ready(Action::NoCooldown),
+        Err(CannotUseAbility::OnCooldown)
+    );
 
     sleep(Duration::from_micros(30));
     app.update();
 
     let cooldowns: &CooldownState<Action> = app.world.resource();
-    assert!(cooldowns.ready(Action::NoCooldown));
+    assert!(cooldowns.ready(Action::NoCooldown).is_ok());
 }
 
 #[test]
@@ -180,16 +183,25 @@ fn global_cooldown_affects_other_actions() {
 
     let mut cooldowns: Mut<CooldownState<Action>> = app.world.resource_mut();
     cooldowns.global_cooldown = Some(Cooldown::new(Duration::from_micros(15)));
-    cooldowns.trigger(Action::Long);
-    assert!(!cooldowns.ready(Action::Short));
-    assert!(!cooldowns.ready(Action::Long));
+    let _ = cooldowns.trigger(Action::Long);
+    assert_eq!(
+        cooldowns.ready(Action::Short),
+        Err(CannotUseAbility::OnCooldown)
+    );
+    assert_eq!(
+        cooldowns.ready(Action::Long),
+        Err(CannotUseAbility::OnCooldown)
+    );
 
     sleep(Duration::from_micros(30));
     app.update();
 
     let cooldowns: &CooldownState<Action> = app.world.resource();
-    assert!(cooldowns.ready(Action::Short));
-    assert!(!cooldowns.ready(Action::Long));
+    assert!(cooldowns.ready(Action::Short).is_ok());
+    assert_eq!(
+        cooldowns.ready(Action::Long),
+        Err(CannotUseAbility::OnCooldown)
+    );
 }
 
 #[test]
@@ -205,20 +217,26 @@ fn global_cooldown_overrides_short_cooldowns() {
 
     let mut cooldowns: Mut<CooldownState<Action>> = app.world.resource_mut();
     cooldowns.global_cooldown = Some(Cooldown::from_secs(0.5));
-    cooldowns.trigger(Action::Short);
-    assert!(!cooldowns.ready(Action::Short));
+    let _ = cooldowns.trigger(Action::Short);
+    assert_eq!(
+        cooldowns.ready(Action::Short),
+        Err(CannotUseAbility::OnCooldown)
+    );
 
     // Let per-action cooldown elapse
     sleep(Duration::from_millis(200));
     app.update();
 
     let cooldowns: &CooldownState<Action> = app.world.resource();
-    assert!(!cooldowns.ready(Action::Short));
+    assert_eq!(
+        cooldowns.ready(Action::Short),
+        Err(CannotUseAbility::OnCooldown)
+    );
 
     // Wait for full GCD to expire
     sleep(Duration::from_millis(400));
     app.update();
 
     let cooldowns: &CooldownState<Action> = app.world.resource();
-    assert!(cooldowns.ready(Action::Short));
+    assert!(cooldowns.ready(Action::Short).is_ok());
 }

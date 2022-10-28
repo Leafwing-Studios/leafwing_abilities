@@ -2,7 +2,7 @@
 
 use crate::{
     charges::{ChargeState, Charges},
-    Abilitylike,
+    Abilitylike, CannotUseAbility,
 };
 
 use bevy::ecs::prelude::Component;
@@ -40,14 +40,14 @@ use std::marker::PhantomData;
 /// action_state.press(Action::Jump);
 ///
 /// // This will only perform a limited check; consider using the `Abilitylike::ready` method instead
-/// if action_state.just_pressed(Action::Jump) && cooldowns.ready(Action::Jump) {
+/// if action_state.just_pressed(Action::Jump) && cooldowns.ready(Action::Jump).is_ok() {
 ///    // Actually do the jumping thing here
 ///    // Remember to actually begin the cooldown if you jumped!
 ///    cooldowns.trigger(Action::Jump);
 /// }
 ///
 /// // We just jumped, so the cooldown isn't ready yet
-/// assert!(!cooldowns.ready(Action::Jump));
+/// assert_eq!(cooldowns.ready(Action::Jump), Err(CannotUseAbility::OnCooldown));
 /// ```
 #[derive(Component, Debug, Clone, PartialEq, Eq)]
 pub struct CooldownState<A: Abilitylike> {
@@ -114,47 +114,47 @@ impl<A: Abilitylike> CooldownState<A> {
 
     /// Triggers the cooldown of the `action` if it is available to be used.
     ///
-    /// This should always be paired with [`Cooldowns::ready`],
-    /// to check if the action can be used before triggering its cooldown.
+    /// This can be paired with [`Cooldowns::ready`],
+    /// to check if the action can be used before triggering its cooldown,
+    /// or this can be used on its own,
+    /// reading the returned [`Result`] to determine if the ability was used.
     #[inline]
-    pub fn trigger(&mut self, action: A) {
+    pub fn trigger(&mut self, action: A) -> Result<(), CannotUseAbility> {
         if let Some(cooldown) = self.get_mut(action) {
-            cooldown.trigger();
+            cooldown.trigger()?;
         }
 
         if let Some(global_cooldown) = self.global_cooldown.as_mut() {
-            global_cooldown.trigger();
+            global_cooldown.trigger()?;
         }
+
+        Ok(())
     }
 
     /// Can the corresponding `action` be used?
     ///
-    /// This will be `true` if the underlying [`Cooldown::ready`] call is true,
+    /// This will be `Ok` if the underlying [`Cooldown::ready`] call is true,
     /// or if no cooldown is stored for this action.
     #[inline]
-    #[must_use]
-    pub fn ready(&self, action: A) -> bool {
-        if !self.gcd_ready() {
-            return false;
-        }
+    pub fn ready(&self, action: A) -> Result<(), CannotUseAbility> {
+        self.gcd_ready()?;
 
         if let Some(cooldown) = self.get(action) {
             cooldown.ready()
         } else {
-            true
+            Ok(())
         }
     }
 
     /// Has the global cooldown for actions of type `A` expired?
     ///
-    /// Returns `true` if no GCD is set.
+    /// Returns `Ok(())` if no GCD is set.
     #[inline]
-    #[must_use]
-    pub fn gcd_ready(&self) -> bool {
+    pub fn gcd_ready(&self) -> Result<(), CannotUseAbility> {
         if let Some(global_cooldown) = self.global_cooldown.as_ref() {
             global_cooldown.ready()
         } else {
-            true
+            Ok(())
         }
     }
 
@@ -238,6 +238,7 @@ impl<A: Abilitylike> CooldownState<A> {
 /// ```rust
 /// use bevy::utils::Duration;
 /// use leafwing_abilities::cooldown::Cooldown;
+/// use leafwing_abilities::CannotUseAbility;
 ///
 /// let mut cooldown = Cooldown::new(Duration::from_secs(3));
 /// assert_eq!(cooldown.remaining(), Duration::ZERO);
@@ -246,14 +247,14 @@ impl<A: Abilitylike> CooldownState<A> {
 /// assert_eq!(cooldown.remaining(), Duration::from_secs(3));
 ///
 /// cooldown.tick(Duration::from_secs(1), &mut None);
-/// assert!(!cooldown.ready());
+/// assert_eq!(cooldown.ready(), Err(CannotUseAbility::OnCooldown));
 ///
 /// cooldown.tick(Duration::from_secs(5), &mut None);
 /// let triggered = cooldown.trigger();
-/// assert!(triggered);
+/// assert!(triggered.is_ok());
 ///
 /// cooldown.refresh();
-/// assert!(cooldown.ready());
+/// assert!(cooldown.ready().is_ok());
 /// ```
 #[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct Cooldown {
@@ -330,8 +331,11 @@ impl Cooldown {
     ///
     /// This will be true if and only if at least one charge is available.
     /// For cooldowns without charges, this will be true if `time_remaining` is [`Duration::Zero`].
-    pub fn ready(&self) -> bool {
-        self.elapsed_time >= self.max_time
+    pub fn ready(&self) -> Result<(), CannotUseAbility> {
+        match self.elapsed_time >= self.max_time {
+            true => Ok(()),
+            false => Err(CannotUseAbility::OnCooldown),
+        }
     }
 
     /// Refreshes the cooldown, causing the underlying action to be ready to use immediately.
@@ -346,16 +350,14 @@ impl Cooldown {
     ///
     /// If this cooldown has multiple charges, only one will be consumed.
     ///
-    /// Returns a boolean indicating whether the cooldown was ready.
-    /// If the cooldown was not ready, `false` is returned and this call has no effect.
+    /// Returns a result indicating whether the cooldown was ready.
+    /// If the cooldown was not ready, [`CannotUseAbility::OnCooldown`] is returned and this call has no effect.
     #[inline]
-    pub fn trigger(&mut self) -> bool {
-        if self.ready() {
-            self.elapsed_time = Duration::ZERO;
-            true
-        } else {
-            false
-        }
+    pub fn trigger(&mut self) -> Result<(), CannotUseAbility> {
+        self.ready()?;
+        self.elapsed_time = Duration::ZERO;
+
+        Ok(())
     }
 
     /// Returns the time that it will take for this action to be ready to use again after being triggered.
@@ -434,24 +436,24 @@ mod tick_tests {
     #[test]
     fn cooldowns_start_ready() {
         let cooldown = Cooldown::from_secs(1.);
-        assert!(cooldown.ready());
+        assert!(cooldown.ready().is_ok());
     }
 
     #[test]
     fn cooldowns_are_ready_when_refreshed() {
         let mut cooldown = Cooldown::from_secs(1.);
-        assert!(cooldown.ready());
-        cooldown.trigger();
-        assert!(!cooldown.ready());
+        assert!(cooldown.ready().is_ok());
+        let _ = cooldown.trigger();
+        assert_eq!(cooldown.ready(), Err(CannotUseAbility::OnCooldown));
         cooldown.refresh();
-        assert!(cooldown.ready());
+        assert!(cooldown.ready().is_ok());
     }
 
     #[test]
     fn ticking_changes_cooldown() {
         let cooldown = Cooldown::new(Duration::from_millis(1000));
         let mut cloned_cooldown = cooldown.clone();
-        cloned_cooldown.trigger();
+        let _ = cloned_cooldown.trigger();
         assert!(cooldown != cloned_cooldown);
 
         cloned_cooldown.tick(Duration::from_millis(123), &mut None);
@@ -461,11 +463,11 @@ mod tick_tests {
     #[test]
     fn cooldowns_reset_after_being_ticked() {
         let mut cooldown = Cooldown::from_secs(1.);
-        cooldown.trigger();
-        assert!(!cooldown.ready());
+        let _ = cooldown.trigger();
+        assert_eq!(cooldown.ready(), Err(CannotUseAbility::OnCooldown));
 
         cooldown.tick(Duration::from_secs(3), &mut None);
-        assert!(cooldown.ready());
+        assert!(cooldown.ready().is_ok());
     }
 
     #[test]
