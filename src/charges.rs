@@ -407,11 +407,11 @@ mod tests {
     #[test]
     fn charges_deplete() {
         let mut charges = Charges::simple(2);
-        charges.expend();
+        charges.expend().unwrap();
         assert_eq!(charges.charges(), 1);
-        charges.expend();
+        charges.expend().unwrap();
         assert_eq!(charges.charges(), 0);
-        charges.expend();
+        assert_eq!(charges.expend(), Err(CannotUseAbility::NoCharges));
         assert_eq!(charges.charges(), 0);
     }
 

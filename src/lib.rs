@@ -160,7 +160,7 @@ pub fn trigger_action(
     action_ready(charges, cooldown)?;
 
     if let Some(ref mut charges) = charges {
-        charges.expend();
+        charges.expend()?;
     } else if let Some(ref mut cooldown) = cooldown {
         cooldown.trigger();
     }

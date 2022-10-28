@@ -150,9 +150,7 @@ pub struct AbilityCosts<A: Abilitylike, P: Pool> {
 impl<A: Abilitylike, P: Pool> Clone for AbilityCosts<A, P> {
     fn clone(&self) -> Self {
         AbilityCosts {
-            cost_vec: A::variants()
-                .map(|ability| self.get(ability).clone())
-                .collect(),
+            cost_vec: A::variants().map(|ability| *self.get(ability)).collect(),
             _phantom: PhantomData::default(),
         }
     }
