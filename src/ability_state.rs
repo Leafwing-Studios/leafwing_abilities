@@ -1,7 +1,7 @@
 // Docs are missing from generated types :(
 #![allow(missing_docs)]
 
-use crate::{charges::ChargeState, cooldown::CooldownState, Abilitylike};
+use crate::{charges::ChargeState, cooldown::CooldownState, Abilitylike, CannotUseAbility};
 use bevy::ecs::query::WorldQuery;
 use leafwing_input_manager::action_state::ActionState;
 
@@ -29,28 +29,41 @@ impl<A: Abilitylike> AbilityStateItem<'_, A> {
     ///
     /// Calls [`Abilitylike::ready`] on the specified action.
     #[inline]
-    #[must_use]
-    pub fn ready(&self, action: A) -> bool {
+    pub fn ready(&self, action: A) -> Result<(), CannotUseAbility> {
         action.ready(&*self.charges, &*self.cooldowns)
     }
 
     /// Is this ability both ready and pressed?
+    ///
+    /// The error value for "this ability is not pressed" will be prioritized over "this ability is not ready".
     #[inline]
-    pub fn ready_and_pressed(&self, action: A) -> bool {
-        self.action_state.pressed(action.clone()) && self.ready(action)
+    pub fn ready_and_pressed(&self, action: A) -> Result<(), CannotUseAbility> {
+        if self.action_state.pressed(action.clone()) {
+            self.ready(action)?;
+            Ok(())
+        } else {
+            Err(CannotUseAbility::NotPressed)
+        }
     }
 
     /// Is this ability both ready and just pressed?
+    ///
+    /// The error value for "this ability is not pressed" will be prioritized over "this ability is not ready".
     #[inline]
-    pub fn ready_and_just_pressed(&self, action: A) -> bool {
-        self.action_state.just_pressed(action.clone()) && self.ready(action)
+    pub fn ready_and_just_pressed(&self, action: A) -> Result<(), CannotUseAbility> {
+        if self.action_state.just_pressed(action.clone()) {
+            self.ready(action)?;
+            Ok(())
+        } else {
+            Err(CannotUseAbility::NotPressed)
+        }
     }
 
     /// Triggers this ability, depleting a charge if available.
     ///
     /// Calls [`Abilitylike::trigger`] on the specified action.
     #[inline]
-    pub fn trigger(&mut self, action: A) -> bool {
+    pub fn trigger(&mut self, action: A) -> Result<(), CannotUseAbility> {
         action.trigger(&mut *self.charges, &mut *self.cooldowns)
     }
 
@@ -58,11 +71,11 @@ impl<A: Abilitylike> AbilityStateItem<'_, A> {
     ///
     /// Calls [`Abilitylike::trigger`] on the specified action.
     #[inline]
-    pub fn trigger_if_pressed(&mut self, action: A) -> bool {
+    pub fn trigger_if_pressed(&mut self, action: A) -> Result<(), CannotUseAbility> {
         if self.action_state.just_pressed(action.clone()) {
             action.trigger(&mut *self.charges, &mut *self.cooldowns)
         } else {
-            false
+            Err(CannotUseAbility::NotPressed)
         }
     }
 
@@ -70,11 +83,11 @@ impl<A: Abilitylike> AbilityStateItem<'_, A> {
     ///
     /// Calls [`Abilitylike::trigger`] on the specified action.
     #[inline]
-    pub fn trigger_if_just_pressed(&mut self, action: A) -> bool {
+    pub fn trigger_if_just_pressed(&mut self, action: A) -> Result<(), CannotUseAbility> {
         if self.action_state.just_pressed(action.clone()) {
             action.trigger(&mut *self.charges, &mut *self.cooldowns)
         } else {
-            false
+            Err(CannotUseAbility::NotPressed)
         }
     }
 }
@@ -84,21 +97,34 @@ impl<A: Abilitylike> AbilityStateReadOnlyItem<'_, A> {
     ///
     /// Calls [`Abilitylike::ready`] on the specified action.
     #[inline]
-    #[must_use]
-    pub fn ready(&self, action: A) -> bool {
+    pub fn ready(&self, action: A) -> Result<(), CannotUseAbility> {
         action.ready(self.charges, self.cooldowns)
     }
 
     /// Is this ability both ready and pressed?
+    ///
+    /// The error value for "this ability is not pressed" will be prioritized over "this ability is not ready".
     #[inline]
-    pub fn ready_and_pressed(&self, action: A) -> bool {
-        self.action_state.pressed(action.clone()) && self.ready(action)
+    pub fn ready_and_pressed(&self, action: A) -> Result<(), CannotUseAbility> {
+        if self.action_state.pressed(action.clone()) {
+            self.ready(action)?;
+            Ok(())
+        } else {
+            Err(CannotUseAbility::NotPressed)
+        }
     }
 
     /// Is this ability both ready and just pressed?
+    ///
+    /// The error value for "this ability is not pressed" will be prioritized over "this ability is not ready".
     #[inline]
-    pub fn ready_and_just_pressed(&self, action: A) -> bool {
-        self.action_state.just_pressed(action.clone()) && self.ready(action)
+    pub fn ready_and_just_pressed(&self, action: A) -> Result<(), CannotUseAbility> {
+        if self.action_state.just_pressed(action.clone()) {
+            self.ready(action)?;
+            Ok(())
+        } else {
+            Err(CannotUseAbility::NotPressed)
+        }
     }
 }
 
@@ -119,9 +145,7 @@ mod tests {
     fn ability_state_methods_are_visible_from_query() {
         fn simple_system(mut query: Query<AbilityState<TestAction>>) {
             let mut ability_state = query.single_mut();
-            if ability_state.ready(TestAction::Duck) {
-                ability_state.trigger(TestAction::Duck);
-            }
+            let _triggered = ability_state.trigger(TestAction::Duck);
         }
 
         let mut app = App::new();
