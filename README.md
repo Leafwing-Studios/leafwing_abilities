@@ -9,6 +9,8 @@ Abilities are intended for gameplay use, and follow complex but relatively stand
 ```rust
 use bevy::prelude::*;
 use leafwing_abilities::prelude::*;
+use leafwing_abilities::premade_pools::mana::{ManaPool, Mana};
+use leafwing_abilities::premade_pools::life::{LifePool, Life};
 use leafwing_input_manager::prelude::*;
 
 // We're modelling https://leagueoflegends.fandom.com/wiki/Zyra/LoL
@@ -67,6 +69,15 @@ impl ZyraAbility {
             .set(ZyraAbility::RampantGrowth, Charges::replenish_one(2))
             .build()
     }
+
+    fn mana_costs() -> AbilityCosts<ZyraAbility, ManaPool> {
+        use ZyraAbility::*;
+        AbilityCosts::new([
+            (DeadlySpines, Mana(70.)),
+            (GraspingRoots, Mana(70.)),
+            (Stranglethorns, Mana(100.)),
+        ])
+    }
 }
 
 /// Marker component for this champion
@@ -76,16 +87,21 @@ struct Zyra;
 #[derive(Bundle)]
 struct ZyraBundle {
     champion: Zyra,
+    life_pool: LifePool,
     #[bundle]
     input_manager_bundle: InputManagerBundle<ZyraAbility>,
     #[bundle]
     abilities_bundle: AbilitiesBundle<ZyraAbility>,
+    #[bundle]
+    mana_bundle: PoolBundle<ZyraAbility, ManaPool>,
 }
 
 impl Default for ZyraBundle {
     fn default() -> Self {
         ZyraBundle {
             champion: Zyra,
+            // Max life, then regen
+            life_pool: LifePool::new_full(Life(574.), (Life(5.5))),
             input_manager_bundle: InputManagerBundle::<ZyraAbility> {
                 input_map: ZyraAbility::input_map(),
                 ..default()
@@ -94,6 +110,10 @@ impl Default for ZyraBundle {
                 cooldowns: ZyraAbility::cooldowns(),
                 charges: ZyraAbility::charges(),
             },
+            mana_bundle: PoolBundle::<ZyraAbility, ManaPool> {
+                pool: ManaPool::new_full(Mana(418.), Mana(13.0)),
+                ability_costs: ZyraAbility::mana_costs(),
+            }
         }
     }
 }
