@@ -4,7 +4,7 @@
 use bevy::ecs::prelude::Component;
 use std::marker::PhantomData;
 
-use crate::Abilitylike;
+use crate::{Abilitylike, CannotUseAbility};
 
 /// A component / resource that stores the [`Charges`] for each [`Abilitylike`] action of type `A`.
 ///
@@ -140,7 +140,7 @@ impl<A: Abilitylike> ChargeState<A> {
     ///     Dash,
     /// }
     ///
-    /// let input_map = ChargeState::new([
+    /// let charge_state = ChargeState::new([
     ///     (Action::Shoot, Charges::replenish_all(6)),
     ///     (Action::Dash, Charges::replenish_one(2)),
     /// ]);
@@ -174,11 +174,11 @@ impl<A: Abilitylike> ChargeState<A> {
     ///
     /// Returns `true` if the underlying [`Charges`] is [`None`].
     #[inline]
-    pub fn expend(&mut self, action: A) -> bool {
+    pub fn expend(&mut self, action: A) -> Result<(), CannotUseAbility> {
         if let Some(charges) = self.get_mut(action) {
             charges.expend()
         } else {
-            true
+            Ok(())
         }
     }
 
@@ -356,16 +356,16 @@ impl Charges {
 
     /// Spends one charge for `action` if able.
     ///
-    /// Returns a boolean indicating whether a charge was available.
-    /// If no charges are available, `false` is returned and this call has no effect.
+    /// Returns a [`Result`] indicating whether a charge was available.
+    /// If no charges are available, [`CannotUseAbility::NoCharges`] is returned and this call has no effect.
     #[inline]
-    pub fn expend(&mut self) -> bool {
+    pub fn expend(&mut self) -> Result<(), CannotUseAbility> {
         if self.current == 0 {
-            return false;
+            return Err(CannotUseAbility::NoCharges);
         }
 
         self.current = self.current.saturating_sub(1);
-        true
+        Ok(())
     }
 
     /// Replenishes charges of `action`, up to its max charges.

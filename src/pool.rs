@@ -6,8 +6,9 @@
 //! Pools have a maximum value, have a minimum value of zero, can regenerate over time, and can be spent to pay for abilities.
 
 use bevy::ecs::prelude::*;
-use bevy::utils::{Duration, HashMap};
+use bevy::utils::Duration;
 use core::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
+use std::marker::PhantomData;
 use thiserror::Error;
 
 use crate::{Abilitylike, CannotUseAbility};
@@ -38,6 +39,7 @@ pub trait Pool:
         + Copy
         + Send
         + Sync
+        + Clone
         + 'static;
 
     /// The minimum value of the pool type.
@@ -138,9 +140,123 @@ pub trait Pool:
 pub struct PoolLessThanZero;
 
 /// Stores the cost (in terms of the [`Pool::Quantity`] of ability) associated with each ability of type `A`.
-#[derive(Component, Clone, Debug)]
+#[derive(Component, Debug)]
 pub struct AbilityCosts<A: Abilitylike, P: Pool> {
-    map: HashMap<A, P::Quantity>,
+    /// The underlying cost of each ability, stored in [`Actionlike::variants`] order.
+    cost_vec: Vec<Option<P::Quantity>>,
+    _phantom: PhantomData<A>,
+}
+
+impl<A: Abilitylike, P: Pool> Clone for AbilityCosts<A, P> {
+    fn clone(&self) -> Self {
+        AbilityCosts {
+            cost_vec: A::variants()
+                .map(|ability| self.get(ability).clone())
+                .collect(),
+            _phantom: PhantomData::default(),
+        }
+    }
+}
+
+impl<A: Abilitylike, P: Pool> Default for AbilityCosts<A, P> {
+    fn default() -> Self {
+        AbilityCosts {
+            cost_vec: A::variants().map(|_| None).collect(),
+            _phantom: PhantomData::default(),
+        }
+    }
+}
+
+impl<A: Abilitylike, P: Pool> AbilityCosts<A, P> {
+    /// Creates a new [`AbilityCosts`] from an iterator of `(charges, action)` pairs
+    ///
+    /// If a [`Pool::Quantity`] is not provided for an action, that action will have no cost in terms of the stored resource pool.
+    ///
+    /// To create an empty [`AbilityCosts`] struct, use the [`Default::default`] method instead.
+    #[must_use]
+    pub fn new(action_cost_pairs: impl IntoIterator<Item = (A, P::Quantity)>) -> Self {
+        let mut ability_costs = AbilityCosts::default();
+        for (action, cost) in action_cost_pairs.into_iter() {
+            ability_costs.set(action, cost);
+        }
+        ability_costs
+    }
+
+    /// Are enough resources available in the `pool` to use the `action`?
+    ///
+    /// Returns `true` if the underlying resource is [`None`].
+    #[inline]
+    #[must_use]
+    pub fn available(&self, action: A, pool: &P) -> bool {
+        if let Some(cost) = self.get(action) {
+            pool.current() > *cost
+        } else {
+            true
+        }
+    }
+
+    /// Pay the ability cost for the `action` from the `pool`, if able
+    ///
+    /// The cost of the action is expended from the [`Pool`].
+    ///
+    /// If the underlying pool does not have enough resources to pay the action's cost,
+    /// a [`CannotUseAbility::PoolEmpty`] error is returned and this call has no effect.
+    ///
+    /// Returns [`Ok(())`] if the underlying [`Pool`] can support the cost of the action.
+    #[inline]
+    pub fn pay_cost(&mut self, action: A, pool: &mut P) -> Result<(), CannotUseAbility> {
+        if let Some(cost) = self.get(action) {
+            pool.expend(*cost)
+        } else {
+            Ok(())
+        }
+    }
+
+    /// Returns a reference to the underlying [`Pool::Quantity`] cost for `action`, if set.
+    #[inline]
+    #[must_use]
+    pub fn get(&self, action: A) -> &Option<P::Quantity> {
+        &self.cost_vec[action.index()]
+    }
+
+    /// Returns a mutable reference to the underlying [`Pool::Quantity`] cost for `action`, if set.
+    #[inline]
+    #[must_use]
+    pub fn get_mut(&mut self, action: A) -> &mut Option<P::Quantity> {
+        &mut self.cost_vec[action.index()]
+    }
+
+    /// Sets the underlying [`Pool::Quantity`] cost for `action` to the provided value.
+    ///
+    /// Unless you're building a new [`AbilityCosts`] struct, you likely want to use [`Self::get_mut`].
+    #[inline]
+    pub fn set(&mut self, action: A, cost: P::Quantity) -> &mut Self {
+        let data = self.get_mut(action);
+        *data = Some(cost);
+
+        self
+    }
+
+    /// Collects a `&mut Self` into a `Self`.
+    ///
+    /// Used to conclude the builder pattern. Actually just calls `self.clone()`.
+    #[inline]
+    #[must_use]
+    pub fn build(&mut self) -> Self {
+        self.clone()
+    }
+
+    /// Returns an iterator of references to the underlying non-[`None`] [`Charges`]
+    #[inline]
+    pub fn iter(&self) -> impl Iterator<Item = &P::Quantity> {
+        self.cost_vec.iter().flatten()
+    }
+
+    /// Returns an iterator of mutable references to the underlying non-[`None`] [`Charges`]
+    #[inline]
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut P::Quantity> {
+        self.cost_vec.iter_mut().flatten()
+    }
 }
 
 /// Stores a resource pool and the associated costs for each ability.
