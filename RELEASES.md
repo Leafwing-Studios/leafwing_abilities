@@ -1,5 +1,11 @@
 # Release Notes
 
+## Version 0.2
+
+### Usability
+
+- All methods and functions that returned a bool now return a `Result<(), CannotUseAbility>` which explains why an action failed.
+
 ## Version 0.1
 
 ### Enhancements
