@@ -7,6 +7,9 @@ use crate::{
     pool::{AbilityCosts, MaxPoolLessThanZero, Pool},
     Abilitylike, CannotUseAbility,
 };
+// Required due to poor macro hygiene in `WorldQuery` macro
+// Tracked in https://github.com/bevyengine/bevy/issues/6593
+use bevy::ecs::entity::Entity;
 use bevy::{ecs::query::WorldQuery, prelude::Component};
 use leafwing_input_manager::action_state::ActionState;
 
@@ -200,8 +203,7 @@ mod tests {
     fn ability_state_fetches_abilities_bundle() {
         let mut world = World::new();
         world
-            .spawn()
-            .insert_bundle(AbilitiesBundle::<TestAction>::default())
+            .spawn(AbilitiesBundle::<TestAction>::default())
             .insert(ActionState::<TestAction>::default());
 
         let mut query_state = world.query::<AbilityState<TestAction>>();

@@ -2,7 +2,7 @@
 //! Actions may only be used if at least one charge is available.
 //! Unlike pools, charges are not shared across abilities.
 
-use bevy::ecs::prelude::Component;
+use bevy::ecs::prelude::{Component, Resource};
 use std::marker::PhantomData;
 
 use crate::{Abilitylike, CannotUseAbility};
@@ -78,7 +78,7 @@ use crate::{Abilitylike, CannotUseAbility};
 ///     Action::Spell.trigger(&mut abilities_bundle.charges, &mut abilities_bundle.cooldowns, Some(&mut mana_bundle.pool), Some(&mut mana_bundle.ability_costs));
 /// }
 /// ```
-#[derive(Component, Clone, PartialEq, Eq, Debug)]
+#[derive(Resource, Component, Clone, PartialEq, Eq, Debug)]
 pub struct ChargeState<A: Abilitylike> {
     /// The underlying [`Charges`], stored in [`Actionlike::variants`] order.
     charges_vec: Vec<Option<Charges>>,
