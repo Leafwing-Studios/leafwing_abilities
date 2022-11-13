@@ -76,19 +76,21 @@ struct CookieBundle {
 }
 
 impl CookieBundle {
-    const COOKIE_SIZE: Vec2 = Vec2::new(100.0, 100.0);
     const COOKIE_CLICKED_COLOR: Color = Color::BEIGE;
     const COOKIE_COLOR: Color = Color::GOLD;
 
     /// Creates a Cookie bundle with a random position.
     fn new() -> CookieBundle {
+        let cookie_size = Size::new(Val::Px(100.0), Val::Px(100.0));
+
         CookieBundle {
             cookie: Cookie,
             button_bundle: ButtonBundle {
-                node: Node {
-                    size: Self::COOKIE_SIZE,
+                style: Style {
+                    size: cookie_size,
+                    ..Default::default()
                 },
-                color: UiColor(Self::COOKIE_COLOR),
+                background_color: BackgroundColor(Self::COOKIE_COLOR),
                 ..default()
             },
             abilities_bundle: AbilitiesBundle {
@@ -104,11 +106,11 @@ impl CookieBundle {
 }
 
 fn spawn_cookie(mut commands: Commands) {
-    commands.spawn_bundle(CookieBundle::new());
+    commands.spawn(CookieBundle::new());
 }
 
 // We need a huge amount of space to be able to let you play this game for long enough ;)
-#[derive(Default)]
+#[derive(Resource, Default)]
 struct Score(u128);
 
 fn cookie_clicked(mut query: Query<(&Interaction, &mut ActionState<CookieAbility>)>) {
@@ -154,7 +156,9 @@ fn handle_double_cookies_ability(
     }
 }
 
-fn change_cookie_color_when_clicked(mut query: Query<(&mut UiColor, AbilityState<CookieAbility>)>) {
+fn change_cookie_color_when_clicked(
+    mut query: Query<(&mut BackgroundColor, AbilityState<CookieAbility>)>,
+) {
     let (mut color, ability_state) = query.single_mut();
     if ability_state
         .ready_and_just_pressed(CookieAbility::AddOne)
@@ -165,7 +169,7 @@ fn change_cookie_color_when_clicked(mut query: Query<(&mut UiColor, AbilityState
 }
 
 /// Resets the cookie's color after a frame
-fn reset_cookie_color(mut query: Query<&mut UiColor, With<Cookie>>) {
+fn reset_cookie_color(mut query: Query<&mut BackgroundColor, With<Cookie>>) {
     let mut color = query.single_mut();
     *color = CookieBundle::COOKIE_COLOR.into();
 }
@@ -175,7 +179,7 @@ struct ScoreText;
 
 fn spawn_score_text(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
-        .spawn_bundle(TextBundle::from_section(
+        .spawn(TextBundle::from_section(
             "Score: ",
             TextStyle {
                 font: asset_server.load("Montserrat/static/MontSerrat-Black.ttf"),

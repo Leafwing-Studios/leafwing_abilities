@@ -38,7 +38,7 @@ impl Action {
 }
 
 fn spawn(mut commands: Commands) {
-    commands.spawn_bundle(AbilitiesBundle {
+    commands.spawn(AbilitiesBundle {
         cooldowns: Action::cooldowns(),
         ..default()
     });

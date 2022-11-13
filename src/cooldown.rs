@@ -5,7 +5,7 @@ use crate::{
     Abilitylike, CannotUseAbility,
 };
 
-use bevy::ecs::prelude::Component;
+use bevy::ecs::prelude::{Component, Resource};
 use bevy::utils::Duration;
 use serde::{Deserialize, Serialize};
 use std::marker::PhantomData;
@@ -49,7 +49,7 @@ use std::marker::PhantomData;
 /// // We just jumped, so the cooldown isn't ready yet
 /// assert_eq!(cooldowns.ready(Action::Jump), Err(CannotUseAbility::OnCooldown));
 /// ```
-#[derive(Component, Debug, Clone, PartialEq, Eq)]
+#[derive(Resource, Component, Debug, Clone, PartialEq, Eq)]
 pub struct CooldownState<A: Abilitylike> {
     /// The [`Cooldown`] of each action
     ///
