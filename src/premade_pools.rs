@@ -5,7 +5,7 @@
 
 use crate::pool::{MaxPoolLessThanZero, Pool};
 use bevy::prelude::{Component, Resource};
-use core::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
+use core::ops::{Div, Mul};
 use derive_more::{Add, AddAssign, Sub, SubAssign};
 
 /// A premade resource pool for life (aka health, hit points or HP).
@@ -143,7 +143,7 @@ pub mod mana {
     }
 
     impl Mul<Mana> for f32 {
-        type Output = Life;
+        type Output = Mana;
 
         fn mul(self, rhs: Mana) -> Mana {
             Life(self * rhs.0)
