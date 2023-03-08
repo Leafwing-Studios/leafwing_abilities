@@ -9,7 +9,6 @@ use crate::{
 };
 // Required due to poor macro hygiene in `WorldQuery` macro
 // Tracked in https://github.com/bevyengine/bevy/issues/6593
-use bevy::ecs::entity::Entity;
 use bevy::{ecs::query::WorldQuery, prelude::Component};
 use leafwing_input_manager::action_state::ActionState;
 

@@ -14,18 +14,19 @@ fn main() {
         .init_resource::<Score>()
         .add_startup_system(spawn_score_text)
         // We're manually calling ActionState::press, so we have to get the timing right so just_pressed isn't overridden
-        .add_system_to_stage(
-            CoreStage::PreUpdate,
-            cookie_clicked.after(InputManagerSystem::Update),
+        .add_system(
+            cookie_clicked
+                .after(InputManagerSystem::Update)
+                .in_base_set(CoreSet::PreUpdate),
         )
         .add_system(handle_add_one_ability)
         .add_system(handle_double_cookies_ability)
         .add_system(change_cookie_color_when_clicked)
         // Reset the cookie's color when clicked after a single frame
         // Rendering happens after CoreStage::Update, so this should do the trick
-        .add_system_to_stage(CoreStage::PreUpdate, reset_cookie_color)
+        .add_system(reset_cookie_color.in_base_set(CoreSet::PreUpdate))
         // Only the freshest scores here
-        .add_system_to_stage(CoreStage::PostUpdate, display_score)
+        .add_system(display_score.in_base_set(CoreSet::PostUpdate))
         .run();
 }
 

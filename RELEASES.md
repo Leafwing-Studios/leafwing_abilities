@@ -2,6 +2,10 @@
 
 ## Version 0.4
 
+### Dependencies
+
+- now supports Bevy 0.10
+
 ### Usability
 
 - the premade `LifePool` and `ManaPool` types now implement the `Resource` trait.
