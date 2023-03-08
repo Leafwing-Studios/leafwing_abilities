@@ -3,7 +3,7 @@
 use crate::pool::Pool;
 use crate::{charges::ChargeState, cooldown::CooldownState, Abilitylike};
 
-use bevy::ecs::{prelude::*, schedule::ShouldRun};
+use bevy::ecs::prelude::*;
 use bevy::time::Time;
 use leafwing_input_manager::plugin::ToggleActions;
 
@@ -54,10 +54,6 @@ pub fn regenerate_resource_pool<P: Pool + Component + Resource>(
 }
 
 /// Returns [`ShouldRun::No`] if [`DisableInput`] exists and [`ShouldRun::Yes`] otherwise
-pub(super) fn run_if_enabled<A: Abilitylike>(toggle_actions: Res<ToggleActions<A>>) -> ShouldRun {
-    if toggle_actions.enabled {
-        ShouldRun::Yes
-    } else {
-        ShouldRun::No
-    }
+pub(super) fn run_if_enabled<A: Abilitylike>(toggle_actions: Res<ToggleActions<A>>) -> bool {
+    toggle_actions.enabled
 }
