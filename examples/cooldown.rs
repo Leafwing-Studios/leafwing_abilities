@@ -10,7 +10,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(InputManagerPlugin::<CookieAbility>::default())
         .add_plugin(AbilityPlugin::<CookieAbility>::default())
-        .add_startup_system(spawn_cookie)
+        .add_startup_systems(( spawn_camera, spawn_cookie))
         .init_resource::<Score>()
         .add_startup_system(spawn_score_text)
         // We're manually calling ActionState::press, so we have to get the timing right so just_pressed isn't overridden
@@ -106,6 +106,10 @@ impl CookieBundle {
     }
 }
 
+fn spawn_camera(mut commands: Commands) {
+    commands.spawn(Camera2dBundle::default());
+}
+
 fn spawn_cookie(mut commands: Commands) {
     commands.spawn(CookieBundle::new());
 }
@@ -183,7 +187,7 @@ fn spawn_score_text(mut commands: Commands, asset_server: Res<AssetServer>) {
         .spawn(TextBundle::from_section(
             "Score: ",
             TextStyle {
-                font: asset_server.load("Montserrat/static/MontSerrat-Black.ttf"),
+                font: asset_server.load("Montserrat/static/Montserrat-Black.ttf"),
                 font_size: 50.,
                 color: Color::WHITE,
             },
