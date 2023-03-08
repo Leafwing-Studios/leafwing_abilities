@@ -146,7 +146,7 @@ pub mod mana {
         type Output = Mana;
 
         fn mul(self, rhs: Mana) -> Mana {
-            Life(self * rhs.0)
+            Mana(self * rhs.0)
         }
     }
 
