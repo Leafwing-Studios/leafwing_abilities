@@ -4,7 +4,7 @@
 //! so feel free to copy-paste them (without attribution) into your own source to make new variants.
 
 use crate::pool::{MaxPoolLessThanZero, Pool};
-use bevy::prelude::Component;
+use bevy::prelude::{Component, Resource};
 use core::ops::{Div, Mul};
 use derive_more::{Add, AddAssign, Sub, SubAssign};
 
@@ -16,7 +16,7 @@ pub mod life {
     /// If they lose it all, they die or pass out.
     ///
     /// This is intended to be stored as a component on each entity.
-    #[derive(Debug, Clone, PartialEq, Component)]
+    #[derive(Debug, Clone, PartialEq, Component, Resource)]
     pub struct LifePool {
         /// The current life.
         current: Life,
@@ -39,6 +39,14 @@ pub mod life {
 
         fn mul(self, rhs: f32) -> Life {
             Life(self.0 * rhs)
+        }
+    }
+
+    impl Mul<Life> for f32 {
+        type Output = Life;
+
+        fn mul(self, rhs: Life) -> Life {
+            Life(self * rhs.0)
         }
     }
 
@@ -108,7 +116,7 @@ pub mod mana {
     /// Units must spend mana to cast spells according to their [`AbilityCosts<A, Mana>`](crate::pool::AbilityCosts) component.
     ///
     /// This is intended to be stored as a component on each entity.
-    #[derive(Debug, Clone, PartialEq, Component)]
+    #[derive(Debug, Clone, PartialEq, Component, Resource)]
     pub struct ManaPool {
         /// The current mana.
         current: Mana,
@@ -131,6 +139,14 @@ pub mod mana {
 
         fn mul(self, rhs: f32) -> Mana {
             Mana(self.0 * rhs)
+        }
+    }
+
+    impl Mul<Mana> for f32 {
+        type Output = Mana;
+
+        fn mul(self, rhs: Mana) -> Mana {
+            Mana(self * rhs.0)
         }
     }
 
