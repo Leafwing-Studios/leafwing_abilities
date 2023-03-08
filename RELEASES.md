@@ -1,5 +1,12 @@
 # Release Notes
 
+## Version 0.4
+
+### Usability
+
+- the premade `LifePool` and `ManaPool` types now implement the `Resource` trait.
+- the premade `Life` and `Mana` types now implement `Mul<T> for f32`, allowing you to have commutative multiplication
+
 ## Version 0.3
 
 ### Dependencies
