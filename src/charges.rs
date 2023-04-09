@@ -9,7 +9,7 @@ use crate::{Abilitylike, CannotUseAbility};
 
 /// A component / resource that stores the [`Charges`] for each [`Abilitylike`] action of type `A`.
 ///
-/// If [`Charges`] is set for an actions, it is only [`Abilitylike::ready`] when at least one charge is availabe.
+/// If [`Charges`] is set for an actions, it is only [`Abilitylike::ready`] when at least one charge is available.
 ///
 /// ```rust
 /// use leafwing_abilities::prelude::*;
@@ -41,7 +41,7 @@ use crate::{Abilitylike, CannotUseAbility};
 ///     }
 ///
 ///     fn cooldowns() -> CooldownState<Action> {
-///         // Ommitted cooldowns and charges will cause the action to be treated as if it always had available cooldowns / charges to use
+///         // Omitted cooldowns and charges will cause the action to be treated as if it always had available cooldowns / charges to use.
 ///         CooldownState::new([
 ///             (Action::Dash, Cooldown::from_secs(2.)),
 ///             (Action::Spell, Cooldown::from_secs(4.5)),
@@ -56,22 +56,22 @@ use crate::{Abilitylike, CannotUseAbility};
 ///     }
 /// }
 ///
-/// // In a real game you'd spawn a bundle with the appropriate components
+/// // In a real game you'd spawn a bundle with the appropriate components.
 /// let mut abilities_bundle = AbilitiesBundle {
 ///     cooldowns: Action::cooldowns(),
 ///     charges: Action::charges(),
 ///     ..Default::default()
 /// };
 ///
-/// // You can also define resource pools using a seperate bundle
-/// // Typically, you'll want to nest both of these bundles under a custom Bundle type for your characters
+/// // You can also define resource pools using a separate bundle.
+/// // Typically, you'll want to nest both of these bundles under a custom Bundle type for your characters.
 /// let mut mana_bundle = PoolBundle {
 ///     // Max mana of 1000., regen rate of 10.
 ///     pool: ManaPool::new_full(Mana(100.0), Mana(1.0)),
 ///     ability_costs: Action::mana_costs(),     
 /// };
 ///
-/// // Then, you can check if an action is ready to be used
+/// // Then, you can check if an action is ready to be used.
 /// // Consider using the `AbilityState` `WorldQuery` type instead for convenience!
 /// if Action::Spell.ready(&abilities_bundle.charges, &abilities_bundle.cooldowns, Some(&mana_bundle.pool), Some(&mana_bundle.ability_costs)).is_ok() {
 ///     // When you use an action, remember to trigger it!
