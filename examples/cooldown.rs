@@ -1,36 +1,32 @@
 //! Demonstrates how to store (and use) per-action cooldowns
 //!
 //! This example shows off a tiny cookie clicker!
-use bevy::prelude::*;
+use bevy::{prelude::*, reflect::TypePath};
 use leafwing_abilities::prelude::*;
 use leafwing_input_manager::{plugin::InputManagerSystem, prelude::*};
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(InputManagerPlugin::<CookieAbility>::default())
-        .add_plugin(AbilityPlugin::<CookieAbility>::default())
-        .add_startup_system(spawn_cookie)
+        .add_plugins(InputManagerPlugin::<CookieAbility>::default())
+        .add_plugins(AbilityPlugin::<CookieAbility>::default())
+        .add_systems(Startup, spawn_cookie)
         .init_resource::<Score>()
-        .add_startup_system(spawn_score_text)
+        .add_systems(Startup, spawn_score_text)
         // We're manually calling ActionState::press, so we have to get the timing right so just_pressed isn't overridden
-        .add_system(
-            cookie_clicked
-                .after(InputManagerSystem::Update)
-                .in_base_set(CoreSet::PreUpdate),
-        )
-        .add_system(handle_add_one_ability)
-        .add_system(handle_double_cookies_ability)
-        .add_system(change_cookie_color_when_clicked)
+        .add_systems(PreUpdate, cookie_clicked.after(InputManagerSystem::Update))
+        .add_systems(Update, handle_add_one_ability)
+        .add_systems(Update, handle_double_cookies_ability)
+        .add_systems(Update, change_cookie_color_when_clicked)
         // Reset the cookie's color when clicked after a single frame
         // Rendering happens after CoreStage::Update, so this should do the trick
-        .add_system(reset_cookie_color.in_base_set(CoreSet::PreUpdate))
+        .add_systems(PreUpdate, reset_cookie_color)
         // Only the freshest scores here
-        .add_system(display_score.in_base_set(CoreSet::PostUpdate))
+        .add_systems(PostUpdate, display_score)
         .run();
 }
 
-#[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Debug, Default)]
+#[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Debug, Default, TypePath)]
 enum CookieAbility {
     #[default]
     AddOne,
@@ -68,11 +64,11 @@ struct Cookie;
 #[derive(Bundle)]
 struct CookieBundle {
     cookie: Cookie,
-    #[bundle]
+    #[bundle()]
     button_bundle: ButtonBundle,
-    #[bundle]
+    #[bundle()]
     abilities_bundle: AbilitiesBundle<CookieAbility>,
-    #[bundle]
+    #[bundle()]
     input_manager_bundle: InputManagerBundle<CookieAbility>,
 }
 
@@ -82,13 +78,15 @@ impl CookieBundle {
 
     /// Creates a Cookie bundle with a random position.
     fn new() -> CookieBundle {
-        let cookie_size = Size::new(Val::Px(100.0), Val::Px(100.0));
+        let cookie_width = Val::Px(100.0);
+        let cookie_height = Val::Px(100.0);
 
         CookieBundle {
             cookie: Cookie,
             button_bundle: ButtonBundle {
                 style: Style {
-                    size: cookie_size,
+                    width: cookie_width,
+                    height: cookie_height,
                     ..Default::default()
                 },
                 background_color: BackgroundColor(Self::COOKIE_COLOR),
@@ -118,7 +116,7 @@ fn cookie_clicked(mut query: Query<(&Interaction, &mut ActionState<CookieAbility
     let (cookie_interaction, mut cookie_action_state) = query.single_mut();
     // This indirection is silly here, but works well in larger games
     // by allowing you to hook into the ability state.
-    if *cookie_interaction == Interaction::Clicked {
+    if *cookie_interaction == Interaction::Pressed {
         cookie_action_state.press(CookieAbility::AddOne);
     }
 }

@@ -157,7 +157,7 @@ impl<A: Abilitylike, P: Pool> Clone for AbilityCosts<A, P> {
     fn clone(&self) -> Self {
         AbilityCosts {
             cost_vec: A::variants().map(|ability| *self.get(ability)).collect(),
-            _phantom: PhantomData::default(),
+            _phantom: PhantomData,
         }
     }
 }
@@ -166,7 +166,7 @@ impl<A: Abilitylike, P: Pool> Default for AbilityCosts<A, P> {
     fn default() -> Self {
         AbilityCosts {
             cost_vec: A::variants().map(|_| None).collect(),
-            _phantom: PhantomData::default(),
+            _phantom: PhantomData,
         }
     }
 }

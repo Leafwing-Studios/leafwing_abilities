@@ -89,7 +89,7 @@ impl<A: Abilitylike> Default for ChargeState<A> {
     fn default() -> Self {
         ChargeState {
             charges_vec: A::variants().map(|_| None).collect(),
-            _phantom: PhantomData::default(),
+            _phantom: PhantomData,
         }
     }
 }
