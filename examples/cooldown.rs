@@ -15,11 +15,7 @@ fn main() {
         .init_resource::<Score>()
         .add_systems(Startup, spawn_score_text)
         // We're manually calling ActionState::press, so we have to get the timing right so just_pressed isn't overridden
-        .add_systems(
-            PreUpdate,
-            cookie_clicked
-                .after(InputManagerSystem::Update)
-        )
+        .add_systems(PreUpdate, cookie_clicked.after(InputManagerSystem::Update))
         .add_systems(Update, handle_add_one_ability)
         .add_systems(Update, handle_double_cookies_ability)
         .add_systems(Update, change_cookie_color_when_clicked)
