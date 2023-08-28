@@ -71,7 +71,7 @@ impl<A: Abilitylike> Default for CooldownState<A> {
         CooldownState {
             cooldown_vec: A::variants().map(|_| None).collect(),
             global_cooldown: None,
-            _phantom: PhantomData::default(),
+            _phantom: PhantomData,
         }
     }
 }

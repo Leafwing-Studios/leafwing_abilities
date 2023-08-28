@@ -47,7 +47,7 @@ pub struct AbilityPlugin<A: Abilitylike> {
 impl<A: Abilitylike> Default for AbilityPlugin<A> {
     fn default() -> Self {
         Self {
-            _phantom: PhantomData::default(),
+            _phantom: PhantomData,
         }
     }
 }
@@ -61,7 +61,7 @@ impl<A: Abilitylike> AbilityPlugin<A> {
     #[must_use]
     pub fn server() -> Self {
         Self {
-            _phantom: PhantomData::default(),
+            _phantom: PhantomData,
         }
     }
 }
