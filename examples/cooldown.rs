@@ -10,7 +10,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugins(InputManagerPlugin::<CookieAbility>::default())
         .add_plugins(AbilityPlugin::<CookieAbility>::default())
-        .add_systems(Startup, (spawn_cookie, spawn_score_text))
+        .add_systems(Startup, (spawn_cookie, spawn_camera, spawn_score_text))
         .init_resource::<Score>()
         // We're manually calling ActionState::press, so we have to get the timing right so just_pressed isn't overridden
         .add_systems(PreUpdate, cookie_clicked.after(InputManagerSystem::Update))
@@ -19,7 +19,7 @@ fn main() {
             (
                 handle_add_one_ability,
                 handle_double_cookies_ability,
-                change_cookie_color_when_clicked,
+                change_cookie_color_when_clicked.before(handle_add_one_ability),
             ),
         )
         // Reset the cookie's color when clicked after a single frame
@@ -106,6 +106,10 @@ fn spawn_cookie(mut commands: Commands) {
     commands.spawn(CookieBundle::new());
 }
 
+fn spawn_camera(mut commands: Commands) {
+    commands.spawn(Camera2dBundle::default());
+}
+
 // We need a huge amount of space to be able to let you play this game for long enough ;)
 #[derive(Resource, Default)]
 struct Score(u128);
@@ -174,14 +178,14 @@ fn reset_cookie_color(mut query: Query<&mut BackgroundColor, With<Cookie>>) {
 #[derive(Component)]
 struct ScoreText;
 
-fn spawn_score_text(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_score_text(mut commands: Commands) {
     commands
         .spawn(TextBundle::from_section(
             "Score: ",
             TextStyle {
-                font: asset_server.load("Montserrat/static/MontSerrat-Black.ttf"),
                 font_size: 50.,
                 color: Color::WHITE,
+                ..Default::default()
             },
         ))
         .insert(ScoreText);
