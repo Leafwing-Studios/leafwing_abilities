@@ -292,7 +292,9 @@ mod tests {
         );
 
         // Just charges
-        charges.as_mut().map(|c| c.replenish());
+        if let Some(c) = charges.as_mut() {
+            c.replenish()
+        }
         cooldown.as_mut().map(|c| c.trigger());
         assert!(ability_ready::<NullPool>(&charges, &cooldown, None, None).is_ok());
 
@@ -361,12 +363,16 @@ mod tests {
         );
 
         // Just charges
-        charges.as_mut().map(|c| c.replenish());
+        if let Some(c) = charges.as_mut() {
+            c.replenish()
+        }
         assert!(trigger_ability::<NullPool>(&mut charges, &mut cooldown, None, None).is_ok());
 
         // Just cooldown
         charges.as_mut().map(|c| c.expend());
-        cooldown.as_mut().map(|c| c.refresh());
+        if let Some(c) = cooldown.as_mut() {
+            c.refresh()
+        }
         assert_eq!(
             trigger_ability::<NullPool>(&mut charges, &mut cooldown, None, None),
             Err(CannotUseAbility::NoCharges)
