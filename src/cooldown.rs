@@ -24,11 +24,11 @@ use std::marker::PhantomData;
 ///
 ///     
 /// ```rust
+/// use bevy::{utils::Duration, reflect::Reflect};
 /// use leafwing_abilities::prelude::*;
 /// use leafwing_input_manager::prelude::*;
-/// use bevy::utils::Duration;
 ///
-/// #[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Eq, Debug)]
+/// #[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Eq, Debug, Reflect)]
 /// enum Action {
 ///     Run,
 ///     Jump,
@@ -71,7 +71,7 @@ impl<A: Abilitylike> Default for CooldownState<A> {
         CooldownState {
             cooldown_vec: A::variants().map(|_| None).collect(),
             global_cooldown: None,
-            _phantom: PhantomData::default(),
+            _phantom: PhantomData,
         }
     }
 }
@@ -85,12 +85,12 @@ impl<A: Abilitylike> CooldownState<A> {
     ///
     /// # Example
     /// ```rust
+    /// use bevy::{input::keyboard::KeyCode, reflect::Reflect};
     /// use leafwing_abilities::cooldown::{Cooldown, CooldownState};
     /// use leafwing_abilities::Abilitylike;
     /// use leafwing_input_manager::Actionlike;
-    /// use bevy::input::keyboard::KeyCode;
     ///
-    /// #[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Eq, Debug)]
+    /// #[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Eq, Debug, Reflect)]
     /// enum Action {
     ///     Run,
     ///     Jump,

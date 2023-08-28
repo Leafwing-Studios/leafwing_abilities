@@ -4,7 +4,7 @@ use crate::Abilitylike;
 use bevy::ecs::prelude::*;
 use core::marker::PhantomData;
 
-use bevy::app::{App, CoreSet, Plugin};
+use bevy::app::{App, Plugin, PreUpdate};
 use leafwing_input_manager::plugin::{InputManagerSystem, ToggleActions};
 
 /// A [`Plugin`] that collects [`Input`](bevy::input::Input) from disparate sources, producing an [`ActionState`](crate::action_state::ActionState) that can be conveniently checked
@@ -47,7 +47,7 @@ pub struct AbilityPlugin<A: Abilitylike> {
 impl<A: Abilitylike> Default for AbilityPlugin<A> {
     fn default() -> Self {
         Self {
-            _phantom: PhantomData::default(),
+            _phantom: PhantomData,
         }
     }
 }
@@ -61,7 +61,7 @@ impl<A: Abilitylike> AbilityPlugin<A> {
     #[must_use]
     pub fn server() -> Self {
         Self {
-            _phantom: PhantomData::default(),
+            _phantom: PhantomData,
         }
     }
 }
@@ -71,11 +71,11 @@ impl<A: Abilitylike> Plugin for AbilityPlugin<A> {
         use crate::systems::*;
 
         // Systems
-        app.add_system(
+        app.add_systems(
+            PreUpdate,
             tick_cooldowns::<A>
                 .run_if(run_if_enabled::<A>)
                 .in_set(InputManagerSystem::Tick)
-                .in_base_set(CoreSet::PreUpdate)
                 .before(InputManagerSystem::Update),
         );
 

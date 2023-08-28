@@ -12,11 +12,12 @@ use crate::{Abilitylike, CannotUseAbility};
 /// If [`Charges`] is set for an actions, it is only [`Abilitylike::ready`] when at least one charge is availabe.
 ///
 /// ```rust
+/// use bevy::reflect::Reflect;
 /// use leafwing_abilities::prelude::*;
 /// use leafwing_abilities::premade_pools::mana::{Mana, ManaPool};
 /// use leafwing_input_manager::Actionlike;
 ///
-/// #[derive(Actionlike, Abilitylike, Clone)]
+/// #[derive(Actionlike, Abilitylike, Clone, Reflect)]
 /// enum Action {
 ///     // Neither cooldowns nor charges
 ///     Move,
@@ -89,7 +90,7 @@ impl<A: Abilitylike> Default for ChargeState<A> {
     fn default() -> Self {
         ChargeState {
             charges_vec: A::variants().map(|_| None).collect(),
-            _phantom: PhantomData::default(),
+            _phantom: PhantomData,
         }
     }
 }
@@ -145,11 +146,11 @@ impl<A: Abilitylike> ChargeState<A> {
     ///
     /// # Example
     /// ```rust
+    /// use bevy::{input::keyboard::KeyCode, reflect::Reflect};
     /// use leafwing_abilities::prelude::*;
     /// use leafwing_input_manager::Actionlike;
-    /// use bevy::input::keyboard::KeyCode;
     ///
-    /// #[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Eq, Hash)]
+    /// #[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
     /// enum Action {
     ///     Run,
     ///     Jump,

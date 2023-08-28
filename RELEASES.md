@@ -1,5 +1,9 @@
 # Release Notes
 
+## Version 0.5
+
+- now supports Bevy 0.11
+
 ## Version 0.4
 
 ### Dependencies
