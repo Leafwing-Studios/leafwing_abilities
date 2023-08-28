@@ -50,8 +50,9 @@ pub mod prelude {
 /// # Example
 /// ```rust
 /// use leafwing_input_manager::Actionlike;
+/// use bevy::reflect::Reflect;
 ///
-/// #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash)]
+/// #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Reflect)]
 /// enum PlayerAction {
 ///    // Movement
 ///    Up,
@@ -227,10 +228,24 @@ impl<A: Abilitylike> Default for AbilitiesBundle<A> {
 
 #[cfg(test)]
 mod tests {
+    use bevy::reflect::Reflect;
+    use leafwing_abilities_macros::Abilitylike;
+    use leafwing_input_manager::Actionlike;
+
     use crate::charges::Charges;
     use crate::cooldown::Cooldown;
     use crate::NullPool;
     use crate::{ability_ready, trigger_ability, CannotUseAbility};
+
+    use crate as leafwing_abilities;
+
+    #[derive(Abilitylike, Actionlike, Reflect, Clone)]
+    enum TestAbility {
+        TestAction,
+    }
+
+    #[test]
+    fn abilitylike_works() {}
 
     #[test]
     fn ability_ready_no_cooldown_no_charges() {

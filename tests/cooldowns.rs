@@ -9,7 +9,7 @@ use leafwing_input_manager::prelude::*;
 
 use std::thread::sleep;
 
-#[derive(Actionlike, Abilitylike, Debug, Clone, Copy)]
+#[derive(Actionlike, Reflect, Abilitylike, Debug, Clone, Copy)]
 enum Action {
     NoCooldown,
     Short,
@@ -49,10 +49,10 @@ fn cooldowns_on_entity() {
     use Action::*;
 
     let mut app = App::new();
-    app.add_plugin(AbilityPlugin::<Action>::default())
+    app.add_plugins(AbilityPlugin::<Action>::default())
         .add_plugins(MinimalPlugins)
-        .add_plugin(InputPlugin)
-        .add_startup_system(spawn);
+        .add_plugins(InputPlugin)
+        .add_systems(Startup, spawn);
 
     // Spawn entities
     app.update();
@@ -91,9 +91,9 @@ fn cooldowns_in_resource() {
     use Action::*;
 
     let mut app = App::new();
-    app.add_plugin(AbilityPlugin::<Action>::default())
+    app.add_plugins(AbilityPlugin::<Action>::default())
         .add_plugins(MinimalPlugins)
-        .add_plugin(InputPlugin)
+        .add_plugins(InputPlugin)
         .insert_resource(Action::cooldowns());
 
     // Cooldown start ready
@@ -124,9 +124,9 @@ fn cooldowns_in_resource() {
 #[test]
 fn global_cooldowns_tick() {
     let mut app = App::new();
-    app.add_plugin(AbilityPlugin::<Action>::default())
+    app.add_plugins(AbilityPlugin::<Action>::default())
         .add_plugins(MinimalPlugins)
-        .add_plugin(InputPlugin)
+        .add_plugins(InputPlugin)
         .insert_resource(Action::cooldowns());
 
     let mut cooldowns: Mut<CooldownState<Action>> = app.world.resource_mut();
@@ -144,9 +144,9 @@ fn global_cooldowns_tick() {
 #[test]
 fn global_cooldown_blocks_cooldownless_actions() {
     let mut app = App::new();
-    app.add_plugin(AbilityPlugin::<Action>::default())
+    app.add_plugins(AbilityPlugin::<Action>::default())
         .add_plugins(MinimalPlugins)
-        .add_plugin(InputPlugin)
+        .add_plugins(InputPlugin)
         .insert_resource(Action::cooldowns());
 
     // First delta time provided of each app is wonky
@@ -173,10 +173,12 @@ fn global_cooldown_blocks_cooldownless_actions() {
 #[test]
 fn global_cooldown_affects_other_actions() {
     let mut app = App::new();
-    app.add_plugin(AbilityPlugin::<Action>::default())
-        .add_plugins(MinimalPlugins)
-        .add_plugin(InputPlugin)
-        .insert_resource(Action::cooldowns());
+    app.add_plugins((
+        MinimalPlugins,
+        InputPlugin,
+        AbilityPlugin::<Action>::default(),
+    ))
+    .insert_resource(Action::cooldowns());
 
     // First delta time provided of each app is wonky
     app.update();
@@ -207,10 +209,12 @@ fn global_cooldown_affects_other_actions() {
 #[test]
 fn global_cooldown_overrides_short_cooldowns() {
     let mut app = App::new();
-    app.add_plugin(AbilityPlugin::<Action>::default())
-        .add_plugins(MinimalPlugins)
-        .add_plugin(InputPlugin)
-        .insert_resource(Action::cooldowns());
+    app.add_plugins((
+        MinimalPlugins,
+        AbilityPlugin::<Action>::default(),
+        InputPlugin,
+    ))
+    .insert_resource(Action::cooldowns());
 
     // First delta time provided of each app is wonky
     app.update();

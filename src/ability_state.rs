@@ -178,10 +178,10 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateReadOnlyItem<'_, A, P> {
 mod tests {
     use crate as leafwing_abilities;
     use crate::{AbilitiesBundle, AbilityState, Abilitylike};
-    use bevy::prelude::*;
+    use bevy::{prelude::*, reflect::Reflect};
     use leafwing_input_manager::{action_state::ActionState, Actionlike};
 
-    #[derive(Actionlike, Abilitylike, Clone, Debug)]
+    #[derive(Actionlike, Reflect, Abilitylike, Clone, Debug)]
     enum TestAction {
         Duck,
         Cover,
@@ -195,7 +195,7 @@ mod tests {
         }
 
         let mut app = App::new();
-        app.add_system(simple_system);
+        app.add_systems(Update, simple_system);
     }
 
     #[test]

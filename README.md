@@ -8,6 +8,7 @@ Abilities are intended for gameplay use, and follow complex but relatively stand
 
 ```rust
 use bevy::prelude::*;
+use bevy::reflect::Reflect;
 use leafwing_abilities::prelude::*;
 use leafwing_abilities::premade_pools::mana::{ManaPool, Mana};
 use leafwing_abilities::premade_pools::life::{LifePool, Life};
@@ -15,7 +16,7 @@ use leafwing_input_manager::prelude::*;
 
 // We're modelling https://leagueoflegends.fandom.com/wiki/Zyra/LoL
 // to show off this crate's features!
-#[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq)]
+#[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Reflect)]
 pub enum ZyraAbility {
     GardenOfThorns,
     DeadlySpines,
@@ -88,11 +89,8 @@ struct Zyra;
 struct ZyraBundle {
     champion: Zyra,
     life_pool: LifePool,
-    #[bundle]
     input_manager_bundle: InputManagerBundle<ZyraAbility>,
-    #[bundle]
     abilities_bundle: AbilitiesBundle<ZyraAbility>,
-    #[bundle]
     mana_bundle: PoolBundle<ZyraAbility, ManaPool>,
 }
 
