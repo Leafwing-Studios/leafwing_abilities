@@ -219,7 +219,6 @@ mod tests {
 pub struct NullPool;
 
 impl Pool for NullPool {
-    // So easy,
     type Quantity = f32;
     const MIN: f32 = 0.0;
 
