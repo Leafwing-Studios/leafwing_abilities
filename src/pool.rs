@@ -43,31 +43,6 @@ pub trait Pool: Sized {
     /// At this point, no resources remain to be spent.
     const ZERO: Self::Quantity;
 
-    /// Creates a new pool with the specified settings.
-    ///
-    /// # Panics
-    ///
-    /// Panics if `max` is less than [`Pool::ZERO`].
-    fn new(current: Self::Quantity, max: Self::Quantity, regen_per_second: Self::Quantity) -> Self;
-
-    /// Creates a new pool, with zero initial resources.
-    ///
-    /// # Panics
-    ///
-    /// Panics if `max` is less than [`Pool::ZERO`].
-    fn new_empty(max: Self::Quantity, regen_per_second: Self::Quantity) -> Self {
-        Pool::new(Self::ZERO, max, regen_per_second)
-    }
-
-    /// Creates a new pool with current value set at the specified maximum.
-    ///
-    /// # Panics
-    ///
-    /// Panics if `max` is less than [`Pool::ZERO`].
-    fn new_full(max: Self::Quantity, regen_per_second: Self::Quantity) -> Self {
-        Pool::new(max, max, regen_per_second)
-    }
-
     /// The current quantity of resources in the pool.
     ///
     /// # Panics
@@ -292,7 +267,7 @@ mod tests {
 
     #[test]
     fn set_pool_cannot_exceed_min() {
-        let mut mana_pool = ManaPool::new_empty(Mana(10.), Mana(0.));
+        let mut mana_pool = ManaPool::new(Mana(0.), Mana(10.), Mana(0.));
         mana_pool.set_current(Mana(-3.));
         assert_eq!(mana_pool.current(), ManaPool::ZERO);
     }
@@ -300,14 +275,14 @@ mod tests {
     #[test]
     fn set_pool_cannot_exceed_max() {
         let max_mana = Mana(10.);
-        let mut mana_pool = ManaPool::new_full(max_mana, Mana(0.));
+        let mut mana_pool = ManaPool::new(max_mana, max_mana, Mana(0.));
         mana_pool.set_current(Mana(100.0));
         assert_eq!(mana_pool.current(), max_mana);
     }
 
     #[test]
     fn reducing_max_decreases_current() {
-        let mut mana_pool = ManaPool::new_full(Mana(10.), Mana(0.));
+        let mut mana_pool = ManaPool::new(Mana(10.), Mana(10.), Mana(0.));
         assert_eq!(mana_pool.current(), Mana(10.));
         mana_pool.set_max(Mana(5.)).unwrap();
         assert_eq!(mana_pool.current(), Mana(5.));
@@ -315,7 +290,7 @@ mod tests {
 
     #[test]
     fn setting_max_below_zero_fails() {
-        let mut mana_pool = ManaPool::new_full(Mana(10.), Mana(0.));
+        let mut mana_pool = ManaPool::new(Mana(10.), Mana(10.), Mana(0.));
         let result = mana_pool.set_max(Mana(-7.));
         assert_eq!(mana_pool.max(), Mana(10.));
         assert_eq!(result, Err(MaxPoolLessThanZero))
@@ -323,7 +298,7 @@ mod tests {
 
     #[test]
     fn expending_depletes_pool() {
-        let mut mana_pool = ManaPool::new_full(Mana(11.), Mana(0.));
+        let mut mana_pool = ManaPool::new(Mana(11.), Mana(11.), Mana(0.));
         mana_pool.expend(Mana(5.)).unwrap();
         assert_eq!(mana_pool.current(), Mana(6.));
         mana_pool.expend(Mana(5.)).unwrap();
@@ -336,7 +311,7 @@ mod tests {
 
     #[test]
     fn pool_can_regenerate() {
-        let mut mana_pool = ManaPool::new_empty(Mana(10.), Mana(1.3));
+        let mut mana_pool = ManaPool::new(Mana(0.), Mana(10.), Mana(1.3));
         mana_pool.regenerate(Duration::from_secs(1));
         let expected = Mana(1.3);
 

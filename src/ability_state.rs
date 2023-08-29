@@ -223,14 +223,6 @@ impl Pool for NullPool {
     type Quantity = f32;
     const ZERO: f32 = 0.0;
 
-    fn new(
-        _current: Self::Quantity,
-        _max: Self::Quantity,
-        _regen_per_second: Self::Quantity,
-    ) -> Self {
-        panic!("This type cannot be constructed.");
-    }
-
     fn current(&self) -> Self::Quantity {
         Self::ZERO
     }

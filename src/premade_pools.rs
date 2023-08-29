@@ -26,6 +26,24 @@ pub mod life {
         pub regen_per_second: Life,
     }
 
+    impl LifePool {
+        /// Creates a new [`LifePool`] with the supplied settings.
+        ///
+        /// # Panics
+        /// Panics if `current` is greater than `max`.
+        /// Panics if `current` is less than zero.
+
+        pub fn new(current: Life, max: Life, regen_per_second: Life) -> Self {
+            assert!(current <= max);
+            assert!(current >= LifePool::ZERO);
+            Self {
+                current,
+                max,
+                regen_per_second,
+            }
+        }
+    }
+
     /// A quantity of life, used to modify a [`LifePool`].
     ///
     /// This can be used for damage computations, life regeneration, healing and so on.
@@ -61,18 +79,6 @@ pub mod life {
     impl Pool for LifePool {
         type Quantity = Life;
         const ZERO: Life = Life(0.);
-
-        fn new(
-            current: Self::Quantity,
-            max: Self::Quantity,
-            regen_per_second: Self::Quantity,
-        ) -> Self {
-            LifePool {
-                current,
-                max,
-                regen_per_second,
-            }
-        }
 
         fn current(&self) -> Self::Quantity {
             self.current
@@ -126,6 +132,23 @@ pub mod mana {
         pub regen_per_second: Mana,
     }
 
+    impl ManaPool {
+        /// Creates a new [`ManaPool`] with the supplied settings.
+        ///
+        /// # Panics
+        /// Panics if `current` is greater than `max`.
+        /// Panics if `current` is less than zero.
+        pub fn new(current: Mana, max: Mana, regen_per_second: Mana) -> Self {
+            assert!(current <= max);
+            assert!(current >= ManaPool::ZERO);
+            Self {
+                current,
+                max,
+                regen_per_second,
+            }
+        }
+    }
+
     /// A quantity of mana, used to modify a [`ManaPool`].
     ///
     /// This can be used for ability costs, mana regeneration and so on.
@@ -161,18 +184,6 @@ pub mod mana {
     impl Pool for ManaPool {
         type Quantity = Mana;
         const ZERO: Mana = Mana(0.);
-
-        fn new(
-            current: Self::Quantity,
-            max: Self::Quantity,
-            regen_per_second: Self::Quantity,
-        ) -> Self {
-            ManaPool {
-                current,
-                max,
-                regen_per_second,
-            }
-        }
 
         fn current(&self) -> Self::Quantity {
             self.current
