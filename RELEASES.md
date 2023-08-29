@@ -13,6 +13,7 @@
 - the `Pool::ZERO` associated constant has been renamed to the clearer `Pool::MIN`.
   - the `MaxPoolLessThanZero` error type has been renamed to `MaxPoolLessThanMin` to match.
 - the `Pool` trait has been split in two, with the regeneration-specific mechanics handled in `RegeneratingPool`, to make the construction of non-regenerating pools much more intuitive
+- added the `Pool::is_empty` and `Pool::is_full` helper methods to the `Pool` trait
 
 ## Version 0.5
 

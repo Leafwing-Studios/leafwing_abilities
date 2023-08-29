@@ -76,6 +76,22 @@ pub trait Pool: Sized {
     /// Returns a [`MaxPoolLessThanMin`] error if this occurs.
     fn set_max(&mut self, new_max: Self::Quantity) -> Result<(), MaxPoolLessThanMin>;
 
+    /// Is the pool currently full?
+    #[inline]
+    #[must_use]
+    fn is_full(&self) -> bool {
+        self.current() == self.max()
+    }
+
+    /// Is the pool currently empty?
+    ///
+    /// Note that this compares the current value to [`Pool::MIN`], not `0`.
+    #[inline]
+    #[must_use]
+    fn is_empty(&self) -> bool {
+        self.current() == Self::MIN
+    }
+
     /// Spend the specified amount from the pool, if there is that much available.
     ///
     /// Otherwise, return the error [`CannotUseAbility::PoolEmpty`].
