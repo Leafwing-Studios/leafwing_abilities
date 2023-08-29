@@ -94,7 +94,12 @@ pub trait Pool: Sized {
         let new_current = self.current() + amount;
         self.set_current(new_current);
     }
+}
 
+/// A resource pool that regenerates (or decays) over time.
+///
+/// Set the regeneration rate to a positive value to regenerate, or a negative value to decay.
+pub trait RegeneratingPool: Pool {
     /// The quantity recovered by the pool in one second.
     ///
     /// This value may be negative, in the case of automatically decaying pools (like rage).

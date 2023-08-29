@@ -10,6 +10,8 @@ use derive_more::{Add, AddAssign, Sub, SubAssign};
 
 /// A premade resource pool for life (aka health, hit points or HP).
 pub mod life {
+    use crate::pool::RegeneratingPool;
+
     use super::*;
 
     /// The amount of life available to a unit.
@@ -104,7 +106,9 @@ pub mod life {
                 Ok(())
             }
         }
+    }
 
+    impl RegeneratingPool for LifePool {
         fn regen_per_second(&self) -> Self::Quantity {
             self.regen_per_second
         }
@@ -117,6 +121,8 @@ pub mod life {
 
 /// A premade resource pool for mana (aka MP).
 pub mod mana {
+    use crate::pool::RegeneratingPool;
+
     use super::*;
 
     /// The amount of mana available to a unit.
@@ -210,7 +216,9 @@ pub mod mana {
                 Ok(())
             }
         }
+    }
 
+    impl RegeneratingPool for ManaPool {
         fn regen_per_second(&self) -> Self::Quantity {
             self.regen_per_second
         }

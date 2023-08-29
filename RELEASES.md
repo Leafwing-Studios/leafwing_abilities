@@ -12,6 +12,7 @@
   - `LifePool::new` and `ManaPool::new` methods have been added to the premade pools: do similarly for your own `Pool` types
 - the `Pool::ZERO` associated constant has been renamed to the clearer `Pool::MIN`.
   - the `MaxPoolLessThanZero` error type has been renamed to `MaxPoolLessThanMin` to match.
+- the `Pool` trait has been split in two, with the regeneration-specific mechanics handled in `RegeneratingPool`, to make the construction of non-regenerating pools much more intuitive
 
 ## Version 0.5
 

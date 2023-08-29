@@ -238,10 +238,4 @@ impl Pool for NullPool {
     fn set_max(&mut self, _new_max: Self::Quantity) -> Result<(), MaxPoolLessThanMin> {
         Ok(())
     }
-
-    fn regen_per_second(&self) -> Self::Quantity {
-        Self::MIN
-    }
-
-    fn set_regen_per_second(&mut self, _new_regen_per_second: Self::Quantity) {}
 }
