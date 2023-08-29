@@ -5,7 +5,7 @@
 
 use crate::pool::{MaxPoolLessThanMin, Pool};
 use bevy::prelude::{Component, Resource};
-use core::ops::{Div, Mul};
+use core::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
 use derive_more::{Add, AddAssign, Sub, SubAssign};
 
 /// A premade resource pool for life (aka health, hit points or HP).
@@ -117,6 +117,36 @@ pub mod life {
             self.regen_per_second = new_regen_per_second;
         }
     }
+
+    impl Add<Life> for LifePool {
+        type Output = Self;
+
+        fn add(mut self, rhs: Life) -> Self::Output {
+            self.set_current(self.current + rhs);
+            self
+        }
+    }
+
+    impl Sub<Life> for LifePool {
+        type Output = Self;
+
+        fn sub(mut self, rhs: Life) -> Self::Output {
+            self.set_current(self.current - rhs);
+            self
+        }
+    }
+
+    impl AddAssign<Life> for LifePool {
+        fn add_assign(&mut self, rhs: Life) {
+            self.set_current(self.current + rhs);
+        }
+    }
+
+    impl SubAssign<Life> for LifePool {
+        fn sub_assign(&mut self, rhs: Life) {
+            self.set_current(self.current - rhs);
+        }
+    }
 }
 
 /// A premade resource pool for mana (aka MP).
@@ -225,6 +255,36 @@ pub mod mana {
 
         fn set_regen_per_second(&mut self, new_regen_per_second: Self::Quantity) {
             self.regen_per_second = new_regen_per_second;
+        }
+    }
+
+    impl Add<Mana> for ManaPool {
+        type Output = Self;
+
+        fn add(mut self, rhs: Mana) -> Self::Output {
+            self.set_current(self.current + rhs);
+            self
+        }
+    }
+
+    impl Sub<Mana> for ManaPool {
+        type Output = Self;
+
+        fn sub(mut self, rhs: Mana) -> Self::Output {
+            self.set_current(self.current - rhs);
+            self
+        }
+    }
+
+    impl AddAssign<Mana> for ManaPool {
+        fn add_assign(&mut self, rhs: Mana) {
+            self.set_current(self.current + rhs);
+        }
+    }
+
+    impl SubAssign<Mana> for ManaPool {
+        fn sub_assign(&mut self, rhs: Mana) {
+            self.set_current(self.current - rhs);
         }
     }
 }
