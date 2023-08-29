@@ -3,7 +3,7 @@
 //! These can be annoying due to orphan rules that prevent you from implementing your own methods,
 //! so feel free to copy-paste them (without attribution) into your own source to make new variants.
 
-use crate::pool::{MaxPoolLessThanZero, Pool};
+use crate::pool::{MaxPoolLessThanMin, Pool};
 use bevy::prelude::{Component, Resource};
 use core::ops::{Div, Mul};
 use derive_more::{Add, AddAssign, Sub, SubAssign};
@@ -31,11 +31,12 @@ pub mod life {
         ///
         /// # Panics
         /// Panics if `current` is greater than `max`.
-        /// Panics if `current` is less than zero.
+        /// Panics if `current` or max is negative.
 
         pub fn new(current: Life, max: Life, regen_per_second: Life) -> Self {
             assert!(current <= max);
-            assert!(current >= LifePool::ZERO);
+            assert!(current >= LifePool::MIN);
+            assert!(max >= LifePool::MIN);
             Self {
                 current,
                 max,
@@ -78,7 +79,7 @@ pub mod life {
 
     impl Pool for LifePool {
         type Quantity = Life;
-        const ZERO: Life = Life(0.);
+        const MIN: Life = Life(0.);
 
         fn current(&self) -> Self::Quantity {
             self.current
@@ -94,9 +95,9 @@ pub mod life {
             self.max
         }
 
-        fn set_max(&mut self, new_max: Self::Quantity) -> Result<(), MaxPoolLessThanZero> {
-            if new_max < Self::ZERO {
-                Err(MaxPoolLessThanZero)
+        fn set_max(&mut self, new_max: Self::Quantity) -> Result<(), MaxPoolLessThanMin> {
+            if new_max < Self::MIN {
+                Err(MaxPoolLessThanMin)
             } else {
                 self.max = new_max;
                 self.set_current(self.current);
@@ -137,10 +138,11 @@ pub mod mana {
         ///
         /// # Panics
         /// Panics if `current` is greater than `max`.
-        /// Panics if `current` is less than zero.
+        /// Panics if `current` or `max` is negative.
         pub fn new(current: Mana, max: Mana, regen_per_second: Mana) -> Self {
             assert!(current <= max);
-            assert!(current >= ManaPool::ZERO);
+            assert!(current >= ManaPool::MIN);
+            assert!(max >= ManaPool::MIN);
             Self {
                 current,
                 max,
@@ -183,7 +185,7 @@ pub mod mana {
 
     impl Pool for ManaPool {
         type Quantity = Mana;
-        const ZERO: Mana = Mana(0.);
+        const MIN: Mana = Mana(0.);
 
         fn current(&self) -> Self::Quantity {
             self.current
@@ -199,9 +201,9 @@ pub mod mana {
             self.max
         }
 
-        fn set_max(&mut self, new_max: Self::Quantity) -> Result<(), MaxPoolLessThanZero> {
-            if new_max < Self::ZERO {
-                Err(MaxPoolLessThanZero)
+        fn set_max(&mut self, new_max: Self::Quantity) -> Result<(), MaxPoolLessThanMin> {
+            if new_max < Self::MIN {
+                Err(MaxPoolLessThanMin)
             } else {
                 self.max = new_max;
                 self.set_current(self.current);

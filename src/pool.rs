@@ -3,7 +3,7 @@
 //! Unlike charges, pools are typically shared across abilities.
 //!
 //! Life, mana, energy and rage might all be modelled effectively as pools.
-//! Pools have a maximum value, have a minimum value of zero, can regenerate over time, and can be spent to pay for abilities.
+//! Pools have a maximum value and a minimum value (almost always zero), can regenerate over time, and can be spent to pay for abilities.
 //!
 //! The [`regenerate_resource_pool`](crate::systems::regenerate_resource_pool) system will regenerate resource pools of a given type if manually added.
 
@@ -41,13 +41,13 @@ pub trait Pool: Sized {
     /// The minimum value of the pool type.
     ///
     /// At this point, no resources remain to be spent.
-    const ZERO: Self::Quantity;
+    const MIN: Self::Quantity;
 
     /// The current quantity of resources in the pool.
     ///
     /// # Panics
     ///
-    /// Panics if `max` is less than [`Pool::ZERO`].
+    /// Panics if `max` is less than [`Pool::MIN`].
     fn current(&self) -> Self::Quantity;
 
     /// Check if the given cost can be paid by this pool.
@@ -72,9 +72,9 @@ pub trait Pool: Sized {
     ///
     /// The current value will be reduced to the new max if necessary.
     ///
-    /// Has no effect if `new_max < Pool::ZERO`.
-    /// Returns a [`PoolMaxLessThanZero`] error if this occurs.
-    fn set_max(&mut self, new_max: Self::Quantity) -> Result<(), MaxPoolLessThanZero>;
+    /// Has no effect if `new_max < Pool::MIN`.
+    /// Returns a [`MaxPoolLessThanMin`] error if this occurs.
+    fn set_max(&mut self, new_max: Self::Quantity) -> Result<(), MaxPoolLessThanMin>;
 
     /// Spend the specified amount from the pool, if there is that much available.
     ///
@@ -115,10 +115,12 @@ pub trait Pool: Sized {
     }
 }
 
-/// The maximum value for a [`Pool`] was set to be less than [`Pool::ZERO`].
+/// The maximum value for a [`Pool`] was set to be less than [`Pool::MIN`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Error)]
-#[error("The maximum quantity that can be stored in a pool must be greater than zero.")]
-pub struct MaxPoolLessThanZero;
+#[error(
+    "The maximum quantity that can be stored in a pool must be greater than the minimum value."
+)]
+pub struct MaxPoolLessThanMin;
 
 /// Stores the cost (in terms of the [`Pool::Quantity`] of ability) associated with each ability of type `A`.
 #[derive(Component, Debug)]
@@ -269,7 +271,7 @@ mod tests {
     fn set_pool_cannot_exceed_min() {
         let mut mana_pool = ManaPool::new(Mana(0.), Mana(10.), Mana(0.));
         mana_pool.set_current(Mana(-3.));
-        assert_eq!(mana_pool.current(), ManaPool::ZERO);
+        assert_eq!(mana_pool.current(), ManaPool::MIN);
     }
 
     #[test]
@@ -289,11 +291,11 @@ mod tests {
     }
 
     #[test]
-    fn setting_max_below_zero_fails() {
+    fn setting_max_below_min_fails() {
         let mut mana_pool = ManaPool::new(Mana(10.), Mana(10.), Mana(0.));
         let result = mana_pool.set_max(Mana(-7.));
         assert_eq!(mana_pool.max(), Mana(10.));
-        assert_eq!(result, Err(MaxPoolLessThanZero))
+        assert_eq!(result, Err(MaxPoolLessThanMin))
     }
 
     #[test]
