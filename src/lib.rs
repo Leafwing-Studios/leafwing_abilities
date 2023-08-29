@@ -168,7 +168,7 @@ pub fn ability_ready<P: Pool>(
         }
     // The pool does not exist, but the cost does
     } else if let Some(cost) = cost {
-        if cost > P::ZERO {
+        if cost > P::MIN {
             Err(CannotUseAbility::PoolInsufficient)
         } else {
             Ok(())

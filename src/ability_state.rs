@@ -4,7 +4,7 @@
 use crate::{
     charges::ChargeState,
     cooldown::CooldownState,
-    pool::{AbilityCosts, MaxPoolLessThanZero, Pool},
+    pool::{AbilityCosts, MaxPoolLessThanMin, Pool},
     Abilitylike, CannotUseAbility,
 };
 // Required due to poor macro hygiene in `WorldQuery` macro
@@ -219,37 +219,22 @@ mod tests {
 pub struct NullPool;
 
 impl Pool for NullPool {
-    // So easy,
     type Quantity = f32;
-    const ZERO: f32 = 0.0;
-
-    fn new(
-        _current: Self::Quantity,
-        _max: Self::Quantity,
-        _regen_per_second: Self::Quantity,
-    ) -> Self {
-        panic!("This type cannot be constructed.");
-    }
+    const MIN: f32 = 0.0;
 
     fn current(&self) -> Self::Quantity {
-        Self::ZERO
+        Self::MIN
     }
 
     fn set_current(&mut self, _new_quantity: Self::Quantity) -> Self::Quantity {
-        Self::ZERO
+        Self::MIN
     }
 
     fn max(&self) -> Self::Quantity {
-        Self::ZERO
+        Self::MIN
     }
 
-    fn set_max(&mut self, _new_max: Self::Quantity) -> Result<(), MaxPoolLessThanZero> {
+    fn set_max(&mut self, _new_max: Self::Quantity) -> Result<(), MaxPoolLessThanMin> {
         Ok(())
     }
-
-    fn regen_per_second(&self) -> Self::Quantity {
-        Self::ZERO
-    }
-
-    fn set_regen_per_second(&mut self, _new_regen_per_second: Self::Quantity) {}
 }

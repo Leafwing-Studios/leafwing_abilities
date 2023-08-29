@@ -3,7 +3,7 @@
 //! Unlike charges, pools are typically shared across abilities.
 //!
 //! Life, mana, energy and rage might all be modelled effectively as pools.
-//! Pools have a maximum value, have a minimum value of zero, can regenerate over time, and can be spent to pay for abilities.
+//! Pools have a maximum value and a minimum value (almost always zero), can regenerate over time, and can be spent to pay for abilities.
 //!
 //! The [`regenerate_resource_pool`](crate::systems::regenerate_resource_pool) system will regenerate resource pools of a given type if manually added.
 
@@ -41,38 +41,13 @@ pub trait Pool: Sized {
     /// The minimum value of the pool type.
     ///
     /// At this point, no resources remain to be spent.
-    const ZERO: Self::Quantity;
-
-    /// Creates a new pool with the specified settings.
-    ///
-    /// # Panics
-    ///
-    /// Panics if `max` is less than [`Pool::ZERO`].
-    fn new(current: Self::Quantity, max: Self::Quantity, regen_per_second: Self::Quantity) -> Self;
-
-    /// Creates a new pool, with zero initial resources.
-    ///
-    /// # Panics
-    ///
-    /// Panics if `max` is less than [`Pool::ZERO`].
-    fn new_empty(max: Self::Quantity, regen_per_second: Self::Quantity) -> Self {
-        Pool::new(Self::ZERO, max, regen_per_second)
-    }
-
-    /// Creates a new pool with current value set at the specified maximum.
-    ///
-    /// # Panics
-    ///
-    /// Panics if `max` is less than [`Pool::ZERO`].
-    fn new_full(max: Self::Quantity, regen_per_second: Self::Quantity) -> Self {
-        Pool::new(max, max, regen_per_second)
-    }
+    const MIN: Self::Quantity;
 
     /// The current quantity of resources in the pool.
     ///
     /// # Panics
     ///
-    /// Panics if `max` is less than [`Pool::ZERO`].
+    /// Panics if `max` is less than [`Pool::MIN`].
     fn current(&self) -> Self::Quantity;
 
     /// Check if the given cost can be paid by this pool.
@@ -97,9 +72,25 @@ pub trait Pool: Sized {
     ///
     /// The current value will be reduced to the new max if necessary.
     ///
-    /// Has no effect if `new_max < Pool::ZERO`.
-    /// Returns a [`PoolMaxLessThanZero`] error if this occurs.
-    fn set_max(&mut self, new_max: Self::Quantity) -> Result<(), MaxPoolLessThanZero>;
+    /// Has no effect if `new_max < Pool::MIN`.
+    /// Returns a [`MaxPoolLessThanMin`] error if this occurs.
+    fn set_max(&mut self, new_max: Self::Quantity) -> Result<(), MaxPoolLessThanMin>;
+
+    /// Is the pool currently full?
+    #[inline]
+    #[must_use]
+    fn is_full(&self) -> bool {
+        self.current() == self.max()
+    }
+
+    /// Is the pool currently empty?
+    ///
+    /// Note that this compares the current value to [`Pool::MIN`], not `0`.
+    #[inline]
+    #[must_use]
+    fn is_empty(&self) -> bool {
+        self.current() == Self::MIN
+    }
 
     /// Spend the specified amount from the pool, if there is that much available.
     ///
@@ -115,11 +106,18 @@ pub trait Pool: Sized {
     /// Replenish the pool by the specified amount.
     ///
     /// This cannot cause the pool to exceed maximum value that can be stored in the pool.
+    /// This is the sign-flipped counterpart to [`Self::expend`],
+    /// however, unlike [`Self::expend`], this method will not return an error if the pool is empty.
     fn replenish(&mut self, amount: Self::Quantity) {
         let new_current = self.current() + amount;
         self.set_current(new_current);
     }
+}
 
+/// A resource pool that regenerates (or decays) over time.
+///
+/// Set the regeneration rate to a positive value to regenerate, or a negative value to decay.
+pub trait RegeneratingPool: Pool {
     /// The quantity recovered by the pool in one second.
     ///
     /// This value may be negative, in the case of automatically decaying pools (like rage).
@@ -140,10 +138,12 @@ pub trait Pool: Sized {
     }
 }
 
-/// The maximum value for a [`Pool`] was set to be less than [`Pool::ZERO`].
+/// The maximum value for a [`Pool`] was set to be less than [`Pool::MIN`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Error)]
-#[error("The maximum quantity that can be stored in a pool must be greater than zero.")]
-pub struct MaxPoolLessThanZero;
+#[error(
+    "The maximum quantity that can be stored in a pool must be greater than the minimum value."
+)]
+pub struct MaxPoolLessThanMin;
 
 /// Stores the cost (in terms of the [`Pool::Quantity`] of ability) associated with each ability of type `A`.
 #[derive(Component, Debug)]
@@ -292,38 +292,38 @@ mod tests {
 
     #[test]
     fn set_pool_cannot_exceed_min() {
-        let mut mana_pool = ManaPool::new_empty(Mana(10.), Mana(0.));
+        let mut mana_pool = ManaPool::new(Mana(0.), Mana(10.), Mana(0.));
         mana_pool.set_current(Mana(-3.));
-        assert_eq!(mana_pool.current(), ManaPool::ZERO);
+        assert_eq!(mana_pool.current(), ManaPool::MIN);
     }
 
     #[test]
     fn set_pool_cannot_exceed_max() {
         let max_mana = Mana(10.);
-        let mut mana_pool = ManaPool::new_full(max_mana, Mana(0.));
+        let mut mana_pool = ManaPool::new(max_mana, max_mana, Mana(0.));
         mana_pool.set_current(Mana(100.0));
         assert_eq!(mana_pool.current(), max_mana);
     }
 
     #[test]
     fn reducing_max_decreases_current() {
-        let mut mana_pool = ManaPool::new_full(Mana(10.), Mana(0.));
+        let mut mana_pool = ManaPool::new(Mana(10.), Mana(10.), Mana(0.));
         assert_eq!(mana_pool.current(), Mana(10.));
         mana_pool.set_max(Mana(5.)).unwrap();
         assert_eq!(mana_pool.current(), Mana(5.));
     }
 
     #[test]
-    fn setting_max_below_zero_fails() {
-        let mut mana_pool = ManaPool::new_full(Mana(10.), Mana(0.));
+    fn setting_max_below_min_fails() {
+        let mut mana_pool = ManaPool::new(Mana(10.), Mana(10.), Mana(0.));
         let result = mana_pool.set_max(Mana(-7.));
         assert_eq!(mana_pool.max(), Mana(10.));
-        assert_eq!(result, Err(MaxPoolLessThanZero))
+        assert_eq!(result, Err(MaxPoolLessThanMin))
     }
 
     #[test]
     fn expending_depletes_pool() {
-        let mut mana_pool = ManaPool::new_full(Mana(11.), Mana(0.));
+        let mut mana_pool = ManaPool::new(Mana(11.), Mana(11.), Mana(0.));
         mana_pool.expend(Mana(5.)).unwrap();
         assert_eq!(mana_pool.current(), Mana(6.));
         mana_pool.expend(Mana(5.)).unwrap();
@@ -336,7 +336,7 @@ mod tests {
 
     #[test]
     fn pool_can_regenerate() {
-        let mut mana_pool = ManaPool::new_empty(Mana(10.), Mana(1.3));
+        let mut mana_pool = ManaPool::new(Mana(0.), Mana(10.), Mana(1.3));
         mana_pool.regenerate(Duration::from_secs(1));
         let expected = Mana(1.3);
 

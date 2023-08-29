@@ -2,11 +2,26 @@
 
 ## Version 0.6
 
+### Documentation
+
+- fixed several typos (`@striezel`)
+- improved the documentation for `Pool::replenish`
+
 ### Usability
 
+- removed the required `new` method from the `Pool` trait: this method was overly restrictive, and prevented the construction of more complex pools with custom initialization parameters
+  - `LifePool::new` and `ManaPool::new` methods have been added to the premade pools: do similarly for your own `Pool` types
+- the `Pool::ZERO` associated constant has been renamed to the clearer `Pool::MIN`.
+  - the `MaxPoolLessThanZero` error type has been renamed to `MaxPoolLessThanMin` to match.
+- the `Pool` trait has been split in two, with the regeneration-specific mechanics handled in `RegeneratingPool`, to make the construction of non-regenerating pools much more intuitive
+- added the `Pool::is_empty` and `Pool::is_full` helper methods to the `Pool` trait
+- added `Add`, `Sub`, `AddAssign` and `SubAssign` implementations to the premade `Life` and `Mana` types and their corresponding pools
+- added the `Display` trait to `Life`, `Mana`, `LifePool` and `ManaPool`
 - removed the useless `AbilityPlugin::server()` plugin creation method
 
 ## Version 0.5
+
+### Dependencies
 
 - now supports Bevy 0.11
 
