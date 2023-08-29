@@ -17,6 +17,7 @@
 - added the `Pool::is_empty` and `Pool::is_full` helper methods to the `Pool` trait
 - added `Add`, `Sub`, `AddAssign` and `SubAssign` implementations to the premade `Life` and `Mana` types and their corresponding pools
 - added the `Display` trait to `Life`, `Mana`, `LifePool` and `ManaPool`
+- removed the useless `AbilityPlugin::server()` plugin creation method
 
 ## Version 0.5
 
