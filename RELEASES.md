@@ -2,6 +2,10 @@
 
 ## Version 0.6
 
+### Documentation
+
+- fixed several typos (`@striezel`)
+
 ### Usability
 
 - removed the required `new` method from the `Pool` trait: this method was overly restrictive, and prevented the construction of more complex pools with custom initialization parameters
