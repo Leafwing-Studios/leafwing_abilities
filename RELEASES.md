@@ -1,6 +1,15 @@
 # Release Notes
 
+## Version 0.6
+
+### Usability
+
+- removed the required `new` method from the `Pool` trait: this method was overly restrictive, and prevented the construction of more complex pools with custom initialization parameters
+  - `LifePool::new` and `ManaPool::new` methods have been added to the premade pools: do similarly for your own `Pool` types
+
 ## Version 0.5
+
+### Dependencies
 
 - now supports Bevy 0.11
 
