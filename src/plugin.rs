@@ -13,7 +13,7 @@ use leafwing_input_manager::plugin::{InputManagerSystem, ToggleActions};
 /// Each variant represents a "virtual button" whose state is stored in an [`ActionState`](crate::action_state::ActionState) struct.
 ///
 /// Each [`InputManagerBundle`](crate::InputManagerBundle) contains:
-///  - an [`InputMap`](crate::input_map::InputMap) component, which stores an entity-specific mapping between the assorted input streams and an internal repesentation of "actions"
+///  - an [`InputMap`](crate::input_map::InputMap) component, which stores an entity-specific mapping between the assorted input streams and an internal representation of "actions"
 ///  - an [`ActionState`](crate::action_state::ActionState) component, which stores the current input state for that entity in an source-agnostic fashion
 ///
 /// If you have more than one distinct type of action (e.g. menu actions, camera actions and player actions), consider creating multiple `Actionlike` enums
@@ -24,7 +24,7 @@ use leafwing_input_manager::plugin::{InputManagerSystem, ToggleActions};
 /// All systems added by this plugin can be dynamically enabled and disabled by setting the value of the [`ToggleActions<A>`] resource is set.
 /// This can be useful when working with states to pause the game, navigate menus or so on.
 ///
-/// **WARNING:** Theses systems run during [`CoreStage::PreUpdate`].
+/// **WARNING:** These systems run during [`CoreStage::PreUpdate`].
 /// If you have systems that care about inputs and actions that also run during this stage,
 /// you must define an ordering between your systems or behavior will be very erratic.
 /// The stable labels for these systems are available under [`InputManagerSystem`] enum.
