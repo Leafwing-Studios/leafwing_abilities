@@ -1,5 +1,11 @@
 # Release Notes
 
+## Version 0.6
+
+### Usability
+
+- removed the useless `AbilityPlugin::server()` plugin creation method
+
 ## Version 0.5
 
 - now supports Bevy 0.11
