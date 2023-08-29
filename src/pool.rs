@@ -106,6 +106,8 @@ pub trait Pool: Sized {
     /// Replenish the pool by the specified amount.
     ///
     /// This cannot cause the pool to exceed maximum value that can be stored in the pool.
+    /// This is the sign-flipped counterpart to [`Self::expend`],
+    /// however, unlike [`Self::expend`], this method will not return an error if the pool is empty.
     fn replenish(&mut self, amount: Self::Quantity) {
         let new_current = self.current() + amount;
         self.set_current(new_current);

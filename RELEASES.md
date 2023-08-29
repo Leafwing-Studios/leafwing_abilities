@@ -5,6 +5,7 @@
 ### Documentation
 
 - fixed several typos (`@striezel`)
+- improved the documentation for `Pool::replenish`
 
 ### Usability
 
