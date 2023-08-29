@@ -5,6 +5,7 @@
 
 use crate::pool::{MaxPoolLessThanMin, Pool};
 use bevy::prelude::{Component, Resource};
+use core::fmt::{Display, Formatter};
 use core::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
 use derive_more::{Add, AddAssign, Sub, SubAssign};
 
@@ -147,6 +148,18 @@ pub mod life {
             self.set_current(self.current - rhs);
         }
     }
+
+    impl Display for Life {
+        fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+            write!(f, "{}", self.0)
+        }
+    }
+
+    impl Display for LifePool {
+        fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+            write!(f, "{}/{}", self.current, self.max)
+        }
+    }
 }
 
 /// A premade resource pool for mana (aka MP).
@@ -285,6 +298,18 @@ pub mod mana {
     impl SubAssign<Mana> for ManaPool {
         fn sub_assign(&mut self, rhs: Mana) {
             self.set_current(self.current - rhs);
+        }
+    }
+
+    impl Display for Mana {
+        fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+            write!(f, "{}", self.0)
+        }
+    }
+
+    impl Display for ManaPool {
+        fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+            write!(f, "{}/{}", self.current, self.max)
         }
     }
 }
