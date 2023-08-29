@@ -80,6 +80,14 @@ pub mod life {
         }
     }
 
+    impl Div<Life> for Life {
+        type Output = f32;
+
+        fn div(self, rhs: Life) -> f32 {
+            self.0 / rhs.0
+        }
+    }
+
     impl Pool for LifePool {
         type Quantity = Life;
         const MIN: Life = Life(0.);
@@ -229,6 +237,14 @@ pub mod mana {
 
         fn div(self, rhs: f32) -> Mana {
             Mana(self.0 / rhs)
+        }
+    }
+
+    impl Div<Mana> for Mana {
+        type Output = f32;
+
+        fn div(self, rhs: Mana) -> f32 {
+            self.0 / rhs.0
         }
     }
 
