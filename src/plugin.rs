@@ -52,20 +52,6 @@ impl<A: Abilitylike> Default for AbilityPlugin<A> {
     }
 }
 
-impl<A: Abilitylike> AbilityPlugin<A> {
-    /// Creates a version of the plugin intended to run on the server
-    ///
-    /// Inputs will not be processed; instead, [`ActionState`](crate::action_state::ActionState)
-    /// should be copied directly from the state provided by the client,
-    /// or constructed from [`ActionDiff`](crate::action_state::ActionDiff) event streams.
-    #[must_use]
-    pub fn server() -> Self {
-        Self {
-            _phantom: PhantomData,
-        }
-    }
-}
-
 impl<A: Abilitylike> Plugin for AbilityPlugin<A> {
     fn build(&self, app: &mut App) {
         use crate::systems::*;
