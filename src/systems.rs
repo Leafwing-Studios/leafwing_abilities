@@ -54,6 +54,6 @@ pub fn regenerate_resource_pool<P: Pool + Component + Resource>(
 }
 
 /// Returns [`ShouldRun::No`] if [`DisableInput`] exists and [`ShouldRun::Yes`] otherwise
-pub(super) fn run_if_enabled<A: Abilitylike>(toggle_actions: Res<ToggleActions<A>>) -> bool {
+pub(super) fn actions_toggled<A: Abilitylike>(toggle_actions: Res<ToggleActions<A>>) -> bool {
     toggle_actions.enabled
 }

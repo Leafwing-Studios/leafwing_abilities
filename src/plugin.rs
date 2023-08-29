@@ -60,7 +60,7 @@ impl<A: Abilitylike> Plugin for AbilityPlugin<A> {
         app.add_systems(
             PreUpdate,
             tick_cooldowns::<A>
-                .run_if(run_if_enabled::<A>)
+                .run_if(actions_toggled::<A>)
                 .in_set(InputManagerSystem::Tick)
                 .before(InputManagerSystem::Update),
         );
