@@ -228,7 +228,7 @@ fn global_cooldown_overrides_short_cooldowns() {
     );
 
     // Let per-action cooldown elapse
-    sleep(Duration::from_millis(200));
+    sleep(Duration::from_millis(250));
     app.update();
 
     let cooldowns: &CooldownState<Action> = app.world.resource();
@@ -238,7 +238,7 @@ fn global_cooldown_overrides_short_cooldowns() {
     );
 
     // Wait for full GCD to expire
-    sleep(Duration::from_millis(400));
+    sleep(Duration::from_millis(250));
     app.update();
 
     let cooldowns: &CooldownState<Action> = app.world.resource();
