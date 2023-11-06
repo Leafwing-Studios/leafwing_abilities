@@ -99,7 +99,7 @@ impl Default for ZyraBundle {
         ZyraBundle {
             champion: Zyra,
             // Max life, then regen
-            life_pool: LifePool::new_full(Life(574.), (Life(5.5))),
+            life_pool: LifePool::new(Life(574.), Life(574.), (Life(5.5))),
             input_manager_bundle: InputManagerBundle::<ZyraAbility> {
                 input_map: ZyraAbility::input_map(),
                 ..default()
@@ -109,7 +109,7 @@ impl Default for ZyraBundle {
                 charges: ZyraAbility::charges(),
             },
             mana_bundle: PoolBundle::<ZyraAbility, ManaPool> {
-                pool: ManaPool::new_full(Mana(418.), Mana(13.0)),
+                pool: ManaPool::new(Mana(418.), Mana(418.), Mana(13.0)),
                 ability_costs: ZyraAbility::mana_costs(),
             }
         }

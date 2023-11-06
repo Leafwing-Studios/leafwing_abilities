@@ -67,8 +67,8 @@ use crate::{Abilitylike, CannotUseAbility};
 /// // You can also define resource pools using a separate bundle.
 /// // Typically, you'll want to nest both of these bundles under a custom Bundle type for your characters.
 /// let mut mana_bundle = PoolBundle {
-///     // Max mana of 1000., regen rate of 10.
-///     pool: ManaPool::new_full(Mana(100.0), Mana(1.0)),
+///     // Max mana of 100., regen rate of 1.
+///     pool: ManaPool::new(Mana(100.0), Mana(100.0), Mana(1.0)),
 ///     ability_costs: Action::mana_costs(),     
 /// };
 ///
