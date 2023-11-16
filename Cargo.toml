@@ -23,25 +23,13 @@ default = ["premade_pools"]
 premade_pools = []
 
 [dependencies]
-bevy = { version = "0.11", default-features = false, features = [
-	"serialize",
-	"bevy_gilrs",
-] }
+bevy = { version = "0.12", default-features = false }
 serde = { version = "1.0", features = ["derive"] }
-leafwing-input-manager = "0.10"
+leafwing-input-manager = "0.11"
 
 leafwing_abilities_macros = { path = "macros", version = "0.3" }
 thiserror = "1.0.37"
 derive_more = "0.99.17"
 
 [dev-dependencies]
-bevy = { version = "0.11", default-features = false, features = [
-	"bevy_asset",
-	"bevy_sprite",
-	"bevy_text",
-	"bevy_ui",
-	"bevy_render",
-	"bevy_core_pipeline",
-	"x11",
-	"default_font",
-] }
+bevy = { version = "0.12" }
