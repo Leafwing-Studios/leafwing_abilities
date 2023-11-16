@@ -23,6 +23,17 @@
 - added the `Display` trait to `Life`, `Mana`, `LifePool` and `ManaPool`
 - removed the useless `AbilityPlugin::server()` plugin creation method
 
+### Code Quality
+
+- `ChargeState`, `CooldownState` and `AbilityCosts` now store internal `HashMap`s
+  - The signatures of `trigger`, `get` and `get_mut` now match the standard signatures of map-like types
+    - Ability arguments are passed by reference
+    - Return values are `Option<&(mut) T>`
+    - `iter` and `iter_mut` now return key-value pairs
+  - As a result, these types no longer implements `PartialEq` and `Eq`
+  - `Abilitylike` now requires the `PartialEq`, `Eq` and `Hash` traits
+  - These changes are in support of [similar changes upstream in LWIM](https://github.com/Leafwing-Studios/leafwing-input-manager/pull/415)
+
 ## Version 0.5
 
 ### Dependencies

@@ -2,8 +2,10 @@
 //! Actions may only be used if at least one charge is available.
 //! Unlike pools, charges are not shared across abilities.
 
-use bevy::ecs::prelude::{Component, Resource};
-use std::marker::PhantomData;
+use bevy::{
+    ecs::prelude::{Component, Resource},
+    utils::HashMap,
+};
 
 use crate::{Abilitylike, CannotUseAbility};
 
@@ -82,15 +84,13 @@ use crate::{Abilitylike, CannotUseAbility};
 #[derive(Resource, Component, Clone, PartialEq, Eq, Debug)]
 pub struct ChargeState<A: Abilitylike> {
     /// The underlying [`Charges`], stored in [`Actionlike::variants`] order.
-    charges_vec: Vec<Option<Charges>>,
-    _phantom: PhantomData<A>,
+    charges_map: HashMap<A, Charges>,
 }
 
 impl<A: Abilitylike> Default for ChargeState<A> {
     fn default() -> Self {
         ChargeState {
-            charges_vec: A::variants().map(|_| None).collect(),
-            _phantom: PhantomData,
+            charges_map: HashMap::new(),
         }
     }
 }
@@ -177,7 +177,7 @@ impl<A: Abilitylike> ChargeState<A> {
     /// Returns `true` if the underlying [`Charges`] is [`None`].
     #[inline]
     #[must_use]
-    pub fn available(&self, action: A) -> bool {
+    pub fn available(&self, action: &A) -> bool {
         if let Some(charges) = self.get(action) {
             charges.available()
         } else {
@@ -192,7 +192,7 @@ impl<A: Abilitylike> ChargeState<A> {
     ///
     /// Returns `true` if the underlying [`Charges`] is [`None`].
     #[inline]
-    pub fn expend(&mut self, action: A) -> Result<(), CannotUseAbility> {
+    pub fn expend(&mut self, action: &A) -> Result<(), CannotUseAbility> {
         if let Some(charges) = self.get_mut(action) {
             charges.expend()
         } else {
@@ -205,7 +205,7 @@ impl<A: Abilitylike> ChargeState<A> {
     /// The exact effect is determined by the [`Charges`]'s [`ReplenishStrategy`].
     /// If the `action` is not associated with a [`Charges`], this has no effect.
     #[inline]
-    pub fn replenish(&mut self, action: A) {
+    pub fn replenish(&mut self, action: &A) {
         if let Some(charges) = self.get_mut(action) {
             charges.replenish();
         }
@@ -214,15 +214,15 @@ impl<A: Abilitylike> ChargeState<A> {
     /// Returns a reference to the underlying [`Charges`] for `action`, if set.
     #[inline]
     #[must_use]
-    pub fn get(&self, action: A) -> &Option<Charges> {
-        &self.charges_vec[action.index()]
+    pub fn get(&self, action: &A) -> Option<&Charges> {
+        self.charges_map.get(action)
     }
 
     /// Returns a mutable reference to the underlying [`Charges`] for `action`, if set.
     #[inline]
     #[must_use]
-    pub fn get_mut(&mut self, action: A) -> &mut Option<Charges> {
-        &mut self.charges_vec[action.index()]
+    pub fn get_mut(&mut self, action: &A) -> Option<&mut Charges> {
+        self.charges_map.get_mut(action)
     }
 
     /// Sets the underlying [`Charges`] for `action` to the provided value.
@@ -230,8 +230,7 @@ impl<A: Abilitylike> ChargeState<A> {
     /// Unless you're building a new [`ChargeState`] struct, you likely want to use [`Self::get_mut`].
     #[inline]
     pub fn set(&mut self, action: A, charges: Charges) -> &mut Self {
-        let data = self.get_mut(action);
-        *data = Some(charges);
+        self.charges_map.insert(action, charges);
 
         self
     }
@@ -247,14 +246,14 @@ impl<A: Abilitylike> ChargeState<A> {
 
     /// Returns an iterator of references to the underlying non-[`None`] [`Charges`]
     #[inline]
-    pub fn iter(&self) -> impl Iterator<Item = &Charges> {
-        self.charges_vec.iter().flatten()
+    pub fn iter(&self) -> impl Iterator<Item = (&A, &Charges)> {
+        self.charges_map.iter()
     }
 
     /// Returns an iterator of mutable references to the underlying non-[`None`] [`Charges`]
     #[inline]
-    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Charges> {
-        self.charges_vec.iter_mut().flatten()
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = (&A, &mut Charges)> {
+        self.charges_map.iter_mut()
     }
 }
 
