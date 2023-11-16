@@ -19,7 +19,7 @@ use crate::{Abilitylike, CannotUseAbility};
 /// use leafwing_abilities::premade_pools::mana::{Mana, ManaPool};
 /// use leafwing_input_manager::Actionlike;
 ///
-/// #[derive(Actionlike, Abilitylike, Clone, Reflect)]
+/// #[derive(Actionlike, Abilitylike, Clone, Reflect, PartialEq, Eq, Hash)]
 /// enum Action {
 ///     // Neither cooldowns nor charges
 ///     Move,
