@@ -16,7 +16,7 @@ use leafwing_input_manager::prelude::*;
 
 // We're modelling https://leagueoflegends.fandom.com/wiki/Zyra/LoL
 // to show off this crate's features!
-#[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Reflect)]
+#[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
 pub enum ZyraAbility {
     GardenOfThorns,
     DeadlySpines,

@@ -31,7 +31,7 @@ use std::marker::PhantomData;
 /// use leafwing_abilities::prelude::*;
 /// use leafwing_input_manager::prelude::*;
 ///
-/// #[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Eq, Debug, Reflect)]
+/// #[derive(Actionlike, Abilitylike, Clone, Reflect, PartialEq, Eq, Hash)]
 /// enum Action {
 ///     Run,
 ///     Jump,
@@ -43,14 +43,14 @@ use std::marker::PhantomData;
 /// action_state.press(Action::Jump);
 ///
 /// // This will only perform a limited check; consider using the `Abilitylike::ready` method instead
-/// if action_state.just_pressed(Action::Jump) && cooldowns.ready(Action::Jump).is_ok() {
+/// if action_state.just_pressed(Action::Jump) && cooldowns.ready(&Action::Jump).is_ok() {
 ///    // Actually do the jumping thing here
 ///    // Remember to actually begin the cooldown if you jumped!
-///    cooldowns.trigger(Action::Jump);
+///    cooldowns.trigger(&Action::Jump);
 /// }
 ///
 /// // We just jumped, so the cooldown isn't ready yet
-/// assert_eq!(cooldowns.ready(Action::Jump), Err(CannotUseAbility::OnCooldown));
+/// assert_eq!(cooldowns.ready(&Action::Jump), Err(CannotUseAbility::OnCooldown));
 /// ```
 #[derive(Resource, Component, Debug, Clone)]
 pub struct CooldownState<A: Abilitylike> {
@@ -91,7 +91,7 @@ impl<A: Abilitylike> CooldownState<A> {
     /// use leafwing_abilities::Abilitylike;
     /// use leafwing_input_manager::Actionlike;
     ///
-    /// #[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Eq, Debug, Reflect)]
+    /// #[derive(Actionlike, Abilitylike, Clone, Reflect, PartialEq, Eq, Hash)]
     /// enum Action {
     ///     Run,
     ///     Jump,
@@ -249,10 +249,10 @@ impl<A: Abilitylike> CooldownState<A> {
 /// cooldown.trigger();
 /// assert_eq!(cooldown.remaining(), Duration::from_secs(3));
 ///
-/// cooldown.tick(Duration::from_secs(1), &mut None);
+/// cooldown.tick(Duration::from_secs(1), None);
 /// assert_eq!(cooldown.ready(), Err(CannotUseAbility::OnCooldown));
 ///
-/// cooldown.tick(Duration::from_secs(5), &mut None);
+/// cooldown.tick(Duration::from_secs(5), None);
 /// let triggered = cooldown.trigger();
 /// assert!(triggered.is_ok());
 ///
