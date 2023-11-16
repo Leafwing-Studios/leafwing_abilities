@@ -220,7 +220,7 @@ fn global_cooldown_overrides_short_cooldowns() {
     app.update();
 
     let mut cooldowns: Mut<CooldownState<Action>> = app.world.resource_mut();
-    cooldowns.global_cooldown = Some(Cooldown::from_secs(0.5));
+    cooldowns.global_cooldown = Some(Cooldown::from_secs(0.2));
     let _ = cooldowns.trigger(&Action::Short);
     assert_eq!(
         cooldowns.ready(&Action::Short),
@@ -228,7 +228,9 @@ fn global_cooldown_overrides_short_cooldowns() {
     );
 
     // Let per-action cooldown elapse
-    sleep(Duration::from_millis(200));
+    // Bevy 0.12 seems to have introduced a maximum delta time,
+    // so this value needs to be fairly small
+    sleep(Duration::from_millis(150));
     app.update();
 
     let cooldowns: &CooldownState<Action> = app.world.resource();
@@ -238,7 +240,7 @@ fn global_cooldown_overrides_short_cooldowns() {
     );
 
     // Wait for full GCD to expire
-    sleep(Duration::from_millis(400));
+    sleep(Duration::from_millis(200));
     app.update();
 
     let cooldowns: &CooldownState<Action> = app.world.resource();
