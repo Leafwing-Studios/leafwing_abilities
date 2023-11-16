@@ -30,7 +30,7 @@ fn main() {
         .run();
 }
 
-#[derive(Actionlike, Reflect, Abilitylike, Clone, Copy, PartialEq, Debug, Default)]
+#[derive(Actionlike, Reflect, Abilitylike, Clone, Copy, PartialEq, Debug, Default, Eq, Hash)]
 enum CookieAbility {
     #[default]
     AddOne,
@@ -135,7 +135,7 @@ fn handle_add_one_ability(
     if actions.just_pressed(CookieAbility::AddOne) {
         // Calling .trigger checks if the cooldown can be used, then triggers it if so
         // Note that this may miss other important limitations on when abilities can be used
-        if cooldowns.trigger(CookieAbility::AddOne).is_ok() {
+        if cooldowns.trigger(&CookieAbility::AddOne).is_ok() {
             // The result returned should be checked to decide how to respond
             score.0 += 1;
         }
