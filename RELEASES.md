@@ -2,6 +2,10 @@
 
 ## Version 0.6
 
+### Dependencies
+
+- now supports Bevy 0.12
+
 ### Documentation
 
 - fixed several typos (`@striezel`)
