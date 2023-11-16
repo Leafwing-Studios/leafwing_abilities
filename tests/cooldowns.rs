@@ -242,5 +242,6 @@ fn global_cooldown_overrides_short_cooldowns() {
     app.update();
 
     let cooldowns: &CooldownState<Action> = app.world.resource();
-    assert!(cooldowns.ready(Action::Short).is_ok());
+    dbg!(cooldowns);
+    cooldowns.ready(Action::Short).unwrap();
 }
