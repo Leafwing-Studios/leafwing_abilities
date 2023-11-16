@@ -327,7 +327,6 @@ mod tests {
         let mut cooldown = Cooldown::from_secs(1.);
         assert!(trigger_ability::<NullPool>(None, Some(&mut cooldown), None, None).is_ok());
 
-        cooldown.trigger().unwrap();
         assert_eq!(
             trigger_ability::<NullPool>(None, Some(&mut cooldown), None, None),
             Err(CannotUseAbility::OnCooldown)
@@ -344,7 +343,6 @@ mod tests {
 
         assert!(trigger_ability::<NullPool>(Some(&mut charges), None, None, None).is_ok());
 
-        charges.expend().unwrap();
         assert_eq!(
             trigger_ability::<NullPool>(Some(&mut charges), None, None, None),
             Err(CannotUseAbility::NoCharges)
@@ -385,7 +383,6 @@ mod tests {
         );
 
         // Just cooldown
-        charges.expend().unwrap();
         cooldown.refresh();
         assert_eq!(
             trigger_ability::<NullPool>(Some(&mut charges), Some(&mut cooldown), None, None),
