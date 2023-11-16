@@ -34,14 +34,27 @@ pub mod life {
         ///
         /// # Panics
         /// Panics if `current` is greater than `max`.
-        /// Panics if `current` or max is negative.
-
+        /// Panics if `current` or `max` is negative.
         pub fn new(current: Life, max: Life, regen_per_second: Life) -> Self {
             assert!(current <= max);
             assert!(current >= LifePool::MIN);
             assert!(max >= LifePool::MIN);
             Self {
                 current,
+                max,
+                regen_per_second,
+            }
+        }
+
+        /// Creates a new [`LifePool`] with `current` equal to `max`..
+        ///
+        /// # Panics
+        /// Panics if `current` is greater than `max`.
+        /// Panics if `max`` is negative.
+        pub fn new_full(max: Life, regen_per_second: Life) -> Self {
+            assert!(max >= LifePool::MIN);
+            Self {
+                current: max,
                 max,
                 regen_per_second,
             }
@@ -202,6 +215,20 @@ pub mod mana {
             assert!(max >= ManaPool::MIN);
             Self {
                 current,
+                max,
+                regen_per_second,
+            }
+        }
+
+        /// Creates a new [`ManaPool`] with `current` equal to `max`..
+        ///
+        /// # Panics
+        /// Panics if `current` is greater than `max`.
+        /// Panics if `max`` is negative.
+        pub fn new_full(max: Mana, regen_per_second: Mana) -> Self {
+            assert!(max >= ManaPool::MIN);
+            Self {
+                current: max,
                 max,
                 regen_per_second,
             }
