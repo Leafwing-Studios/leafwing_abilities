@@ -9,7 +9,7 @@ use leafwing_input_manager::prelude::*;
 
 use std::thread::sleep;
 
-#[derive(Actionlike, Reflect, Abilitylike, Debug, Clone, Copy)]
+#[derive(Actionlike, Reflect, Abilitylike, Debug, Clone, Copy, Hash, PartialEq, Eq)]
 enum Action {
     NoCooldown,
     Short,
@@ -17,6 +17,12 @@ enum Action {
 }
 
 impl Action {
+    /// You could use the `strum` crate to derive this automatically!
+    fn variants() -> impl Iterator<Item = Action> {
+        use Action::*;
+        [NoCooldown, Short, Long].iter().copied()
+    }
+
     fn cooldown(&self) -> Option<Cooldown> {
         match self {
             Action::NoCooldown => None,
@@ -70,7 +76,7 @@ fn cooldowns_on_entity() {
 
     // No waiting
     let mut query_state = app.world.query::<&CooldownState<Action>>();
-    let cooldowns: &CooldownState<Action> = query_state.single(&mut app.world);
+    let cooldowns: &CooldownState<Action> = query_state.single(&app.world);
     assert!(cooldowns.ready(NoCooldown).is_ok());
     assert_eq!(cooldowns.ready(Short), Err(CannotUseAbility::OnCooldown));
     assert_eq!(cooldowns.ready(Long), Err(CannotUseAbility::OnCooldown));
@@ -80,7 +86,7 @@ fn cooldowns_on_entity() {
 
     // Short wait
     let mut query_state = app.world.query::<&CooldownState<Action>>();
-    let cooldowns: &CooldownState<Action> = query_state.single(&mut app.world);
+    let cooldowns: &CooldownState<Action> = query_state.single(&app.world);
     assert!(cooldowns.ready(NoCooldown).is_ok());
     assert!(cooldowns.ready(Short).is_ok());
     assert_eq!(cooldowns.ready(Long), Err(CannotUseAbility::OnCooldown));

@@ -30,7 +30,7 @@ fn main() {
         .run();
 }
 
-#[derive(Actionlike, Reflect, Abilitylike, Clone, Copy, PartialEq, Debug, Default)]
+#[derive(Actionlike, Reflect, Abilitylike, Clone, Copy, PartialEq, Debug, Default, Hash, Eq)]
 enum CookieAbility {
     #[default]
     AddOne,
@@ -38,6 +38,12 @@ enum CookieAbility {
 }
 
 impl CookieAbility {
+    /// You could use the `strum` crate to derive this automatically!
+    fn variants() -> impl Iterator<Item = CookieAbility> {
+        use CookieAbility::*;
+        [AddOne, DoubleCookies].iter().copied()
+    }
+
     fn cooldown(&self) -> Cooldown {
         match self {
             CookieAbility::AddOne => Cooldown::from_secs(0.1),
@@ -56,7 +62,7 @@ impl CookieAbility {
     fn key_bindings() -> InputMap<CookieAbility> {
         // CookieAbility::AddOne is pressed manually when the cookie is clicked on
         InputMap::default()
-            .insert(KeyCode::Space, CookieAbility::DoubleCookies)
+            .insert(CookieAbility::DoubleCookies, KeyCode::Space)
             .build()
     }
 }
@@ -119,7 +125,7 @@ fn cookie_clicked(mut query: Query<(&Interaction, &mut ActionState<CookieAbility
     // This indirection is silly here, but works well in larger games
     // by allowing you to hook into the ability state.
     if *cookie_interaction == Interaction::Pressed {
-        cookie_action_state.press(CookieAbility::AddOne);
+        cookie_action_state.press(&CookieAbility::AddOne);
     }
 }
 
@@ -132,7 +138,7 @@ fn handle_add_one_ability(
 ) {
     let (actions, mut cooldowns) = query.single_mut();
     // See the handle_double_cookies system for a more ergonomic, robust (and implicit) way to handle this pattern
-    if actions.just_pressed(CookieAbility::AddOne) {
+    if actions.just_pressed(&CookieAbility::AddOne) {
         // Calling .trigger checks if the cooldown can be used, then triggers it if so
         // Note that this may miss other important limitations on when abilities can be used
         if cooldowns.trigger(CookieAbility::AddOne).is_ok() {

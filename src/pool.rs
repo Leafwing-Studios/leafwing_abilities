@@ -10,7 +10,7 @@
 use bevy::ecs::prelude::*;
 use bevy::utils::Duration;
 use core::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
-use std::marker::PhantomData;
+use std::{collections::HashMap, marker::PhantomData};
 use thiserror::Error;
 
 use crate::{Abilitylike, CannotUseAbility};
@@ -148,15 +148,15 @@ pub struct MaxPoolLessThanMin;
 /// Stores the cost (in terms of the [`Pool::Quantity`] of ability) associated with each ability of type `A`.
 #[derive(Component, Debug)]
 pub struct AbilityCosts<A: Abilitylike, P: Pool> {
-    /// The underlying cost of each ability, stored in [`Actionlike::variants`] order.
-    cost_vec: Vec<Option<P::Quantity>>,
+    /// The underlying cost of each ability.
+    cost_map: HashMap<A, P::Quantity>,
     _phantom: PhantomData<A>,
 }
 
 impl<A: Abilitylike, P: Pool> Clone for AbilityCosts<A, P> {
     fn clone(&self) -> Self {
         AbilityCosts {
-            cost_vec: A::variants().map(|ability| *self.get(ability)).collect(),
+            cost_map: self.cost_map.clone(),
             _phantom: PhantomData,
         }
     }
@@ -165,7 +165,7 @@ impl<A: Abilitylike, P: Pool> Clone for AbilityCosts<A, P> {
 impl<A: Abilitylike, P: Pool> Default for AbilityCosts<A, P> {
     fn default() -> Self {
         AbilityCosts {
-            cost_vec: A::variants().map(|_| None).collect(),
+            cost_map: HashMap::new(),
             _phantom: PhantomData,
         }
     }
@@ -219,15 +219,15 @@ impl<A: Abilitylike, P: Pool> AbilityCosts<A, P> {
     /// Returns a reference to the underlying [`Pool::Quantity`] cost for `action`, if set.
     #[inline]
     #[must_use]
-    pub fn get(&self, action: A) -> &Option<P::Quantity> {
-        &self.cost_vec[action.index()]
+    pub fn get(&self, action: A) -> Option<&P::Quantity> {
+        self.cost_map.get(&action)
     }
 
     /// Returns a mutable reference to the underlying [`Pool::Quantity`] cost for `action`, if set.
     #[inline]
     #[must_use]
-    pub fn get_mut(&mut self, action: A) -> &mut Option<P::Quantity> {
-        &mut self.cost_vec[action.index()]
+    pub fn get_mut(&mut self, action: A) -> Option<&mut P::Quantity> {
+        self.cost_map.get_mut(&action)
     }
 
     /// Sets the underlying [`Pool::Quantity`] cost for `action` to the provided value.
@@ -235,9 +235,7 @@ impl<A: Abilitylike, P: Pool> AbilityCosts<A, P> {
     /// Unless you're building a new [`AbilityCosts`] struct, you likely want to use [`Self::get_mut`].
     #[inline]
     pub fn set(&mut self, action: A, cost: P::Quantity) -> &mut Self {
-        let data = self.get_mut(action);
-        *data = Some(cost);
-
+        self.cost_map.insert(action, cost);
         self
     }
 
@@ -253,13 +251,13 @@ impl<A: Abilitylike, P: Pool> AbilityCosts<A, P> {
     /// Returns an iterator of references to the underlying non-[`None`] [`Charges`]
     #[inline]
     pub fn iter(&self) -> impl Iterator<Item = &P::Quantity> {
-        self.cost_vec.iter().flatten()
+        self.cost_map.values()
     }
 
     /// Returns an iterator of mutable references to the underlying non-[`None`] [`Charges`]
     #[inline]
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut P::Quantity> {
-        self.cost_vec.iter_mut().flatten()
+        self.cost_map.values_mut()
     }
 }
 

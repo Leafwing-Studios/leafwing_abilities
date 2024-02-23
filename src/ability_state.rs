@@ -181,7 +181,7 @@ mod tests {
     use bevy::{prelude::*, reflect::Reflect};
     use leafwing_input_manager::{action_state::ActionState, Actionlike};
 
-    #[derive(Actionlike, Reflect, Abilitylike, Clone, Debug)]
+    #[derive(Actionlike, Reflect, Abilitylike, Clone, Debug, Hash, PartialEq, Eq)]
     enum TestAction {
         Duck,
         Cover,

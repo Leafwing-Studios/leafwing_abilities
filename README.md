@@ -16,7 +16,7 @@ use leafwing_input_manager::prelude::*;
 
 // We're modelling https://leagueoflegends.fandom.com/wiki/Zyra/LoL
 // to show off this crate's features!
-#[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Reflect)]
+#[derive(Actionlike, Abilitylike, Clone, Copy, Hash, PartialEq, Eq, Reflect)]
 pub enum ZyraAbility {
     GardenOfThorns,
     DeadlySpines,
@@ -26,15 +26,21 @@ pub enum ZyraAbility {
 }
 
 impl ZyraAbility {
+    /// You could use the `strum` crate to derive this automatically!
+    fn variants() -> Vec<ZyraAbility> {
+        use ZyraAbility::*;
+        vec![GardenOfThorns, DeadlySpines, RampantGrowth, GraspingRoots, Stranglethorns]
+    }
+
     fn input_map() -> InputMap<ZyraAbility> {
         use ZyraAbility::*;
 
         // We can use this `new` idiom, which accepts an iterator of pairs
         InputMap::new([
-            (KeyCode::Q, DeadlySpines),
-            (KeyCode::W, RampantGrowth),
-            (KeyCode::E, GraspingRoots),
-            (KeyCode::R, Stranglethorns),
+            (DeadlySpines, KeyCode::KeyQ),
+            (RampantGrowth, KeyCode::KeyW),
+            (GraspingRoots, KeyCode::KeyE),
+            (Stranglethorns, KeyCode::KeyR),
         ])
     }
 

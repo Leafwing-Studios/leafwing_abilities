@@ -6,6 +6,7 @@ use bevy::ecs::prelude::{Component, Resource};
 use std::marker::PhantomData;
 
 use crate::{Abilitylike, CannotUseAbility};
+use std::collections::HashMap;
 
 /// A component / resource that stores the [`Charges`] for each [`Abilitylike`] action of type `A`.
 ///
@@ -17,7 +18,7 @@ use crate::{Abilitylike, CannotUseAbility};
 /// use leafwing_abilities::premade_pools::mana::{Mana, ManaPool};
 /// use leafwing_input_manager::Actionlike;
 ///
-/// #[derive(Actionlike, Abilitylike, Clone, Reflect)]
+/// #[derive(Actionlike, Abilitylike, Clone, Reflect, Hash, PartialEq, Eq)]
 /// enum Action {
 ///     // Neither cooldowns nor charges
 ///     Move,
@@ -81,15 +82,15 @@ use crate::{Abilitylike, CannotUseAbility};
 /// ```
 #[derive(Resource, Component, Clone, PartialEq, Eq, Debug)]
 pub struct ChargeState<A: Abilitylike> {
-    /// The underlying [`Charges`], stored in [`Actionlike::variants`] order.
-    charges_vec: Vec<Option<Charges>>,
+    /// The underlying [`Charges`].
+    charges_map: HashMap<A, Charges>,
     _phantom: PhantomData<A>,
 }
 
 impl<A: Abilitylike> Default for ChargeState<A> {
     fn default() -> Self {
         ChargeState {
-            charges_vec: A::variants().map(|_| None).collect(),
+            charges_map: HashMap::new(),
             _phantom: PhantomData,
         }
     }
@@ -214,15 +215,15 @@ impl<A: Abilitylike> ChargeState<A> {
     /// Returns a reference to the underlying [`Charges`] for `action`, if set.
     #[inline]
     #[must_use]
-    pub fn get(&self, action: A) -> &Option<Charges> {
-        &self.charges_vec[action.index()]
+    pub fn get(&self, action: A) -> Option<&Charges> {
+        self.charges_map.get(&action)
     }
 
     /// Returns a mutable reference to the underlying [`Charges`] for `action`, if set.
     #[inline]
     #[must_use]
-    pub fn get_mut(&mut self, action: A) -> &mut Option<Charges> {
-        &mut self.charges_vec[action.index()]
+    pub fn get_mut(&mut self, action: A) -> Option<&mut Charges> {
+        self.charges_map.get_mut(&action)
     }
 
     /// Sets the underlying [`Charges`] for `action` to the provided value.
@@ -230,8 +231,7 @@ impl<A: Abilitylike> ChargeState<A> {
     /// Unless you're building a new [`ChargeState`] struct, you likely want to use [`Self::get_mut`].
     #[inline]
     pub fn set(&mut self, action: A, charges: Charges) -> &mut Self {
-        let data = self.get_mut(action);
-        *data = Some(charges);
+        self.charges_map.insert(action, charges);
 
         self
     }
@@ -248,13 +248,13 @@ impl<A: Abilitylike> ChargeState<A> {
     /// Returns an iterator of references to the underlying non-[`None`] [`Charges`]
     #[inline]
     pub fn iter(&self) -> impl Iterator<Item = &Charges> {
-        self.charges_vec.iter().flatten()
+        self.charges_map.values()
     }
 
     /// Returns an iterator of mutable references to the underlying non-[`None`] [`Charges`]
     #[inline]
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Charges> {
-        self.charges_vec.iter_mut().flatten()
+        self.charges_map.values_mut()
     }
 }
 
