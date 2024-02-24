@@ -9,7 +9,7 @@ use crate::{
 };
 // Required due to poor macro hygiene in `WorldQuery` macro
 // Tracked in https://github.com/bevyengine/bevy/issues/6593
-use bevy::{ecs::query::WorldQuery, prelude::Component};
+use bevy::{ecs::query::QueryData, prelude::Component};
 use leafwing_input_manager::action_state::ActionState;
 
 /// A custom [`WorldQuery`](bevy::ecs::query::WorldQuery) type that fetches all ability relevant data for you.
@@ -23,8 +23,8 @@ use leafwing_input_manager::action_state::ActionState;
 /// Once you have a [`AbilityStateItem`] by calling `.iter_mut()` or `.single_mut` on your query
 /// (or a [`AbilityStateReadOnlyItem`] by calling `.iter()` or `.single`),
 /// you can use the methods defined there to perform common tasks quickly and reliably.
-#[derive(WorldQuery)]
-#[world_query(mutable)]
+#[derive(QueryData)]
+#[query_data(mutable)]
 pub struct AbilityState<A: Abilitylike, P: Pool + Component = NullPool> {
     /// The [`ActionState`] of the abilities of this entity of type `A`
     pub action_state: &'static ActionState<A>,
@@ -60,7 +60,7 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateItem<'_, A, P> {
     /// The error value for "this ability is not pressed" will be prioritized over "this ability is not ready".
     #[inline]
     pub fn ready_and_pressed(&self, action: A) -> Result<(), CannotUseAbility> {
-        if self.action_state.pressed(action.clone()) {
+        if self.action_state.pressed(&action) {
             self.ready(action)?;
             Ok(())
         } else {
@@ -73,7 +73,7 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateItem<'_, A, P> {
     /// The error value for "this ability is not pressed" will be prioritized over "this ability is not ready".
     #[inline]
     pub fn ready_and_just_pressed(&self, action: A) -> Result<(), CannotUseAbility> {
-        if self.action_state.just_pressed(action.clone()) {
+        if self.action_state.just_pressed(&action) {
             self.ready(action)?;
             Ok(())
         } else {
@@ -102,7 +102,7 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateItem<'_, A, P> {
     /// Calls [`Abilitylike::trigger`] on the specified action.
     #[inline]
     pub fn trigger_if_pressed(&mut self, action: A) -> Result<(), CannotUseAbility> {
-        if self.action_state.just_pressed(action.clone()) {
+        if self.action_state.just_pressed(&action) {
             let maybe_pool = self.pool.as_deref_mut();
             let maybe_ability_costs = self.ability_costs.as_deref();
 
@@ -122,7 +122,7 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateItem<'_, A, P> {
     /// Calls [`Abilitylike::trigger`] on the specified action.
     #[inline]
     pub fn trigger_if_just_pressed(&mut self, action: A) -> Result<(), CannotUseAbility> {
-        if self.action_state.just_pressed(action.clone()) {
+        if self.action_state.just_pressed(&action) {
             let maybe_pool = self.pool.as_deref_mut();
             let maybe_ability_costs = self.ability_costs.as_deref();
 
@@ -152,7 +152,7 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateReadOnlyItem<'_, A, P> {
     /// The error value for "this ability is not pressed" will be prioritized over "this ability is not ready".
     #[inline]
     pub fn ready_and_pressed(&self, action: A) -> Result<(), CannotUseAbility> {
-        if self.action_state.pressed(action.clone()) {
+        if self.action_state.pressed(&action) {
             self.ready(action)?;
             Ok(())
         } else {
@@ -165,7 +165,7 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateReadOnlyItem<'_, A, P> {
     /// The error value for "this ability is not pressed" will be prioritized over "this ability is not ready".
     #[inline]
     pub fn ready_and_just_pressed(&self, action: A) -> Result<(), CannotUseAbility> {
-        if self.action_state.just_pressed(action.clone()) {
+        if self.action_state.just_pressed(&action) {
             self.ready(action)?;
             Ok(())
         } else {
@@ -181,7 +181,7 @@ mod tests {
     use bevy::{prelude::*, reflect::Reflect};
     use leafwing_input_manager::{action_state::ActionState, Actionlike};
 
-    #[derive(Actionlike, Reflect, Abilitylike, Clone, Debug)]
+    #[derive(Actionlike, Reflect, Abilitylike, Clone, Debug, Hash, PartialEq, Eq)]
     enum TestAction {
         Duck,
         Cover,

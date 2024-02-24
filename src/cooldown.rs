@@ -8,7 +8,7 @@ use crate::{
 use bevy::ecs::prelude::{Component, Resource};
 use bevy::utils::Duration;
 use serde::{Deserialize, Serialize};
-use std::marker::PhantomData;
+use std::{collections::HashMap, marker::PhantomData};
 
 /// The time until each action of type `A` can be used again.
 ///
@@ -28,7 +28,7 @@ use std::marker::PhantomData;
 /// use leafwing_abilities::prelude::*;
 /// use leafwing_input_manager::prelude::*;
 ///
-/// #[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Eq, Debug, Reflect)]
+/// #[derive(Actionlike, Abilitylike, Clone, Copy, Hash, PartialEq, Eq, Debug, Reflect)]
 /// enum Action {
 ///     Run,
 ///     Jump,
@@ -37,10 +37,10 @@ use std::marker::PhantomData;
 /// let mut action_state = ActionState::<Action>::default();
 /// let mut cooldowns = CooldownState::new([(Action::Jump, Cooldown::from_secs(1.))]);
 ///
-/// action_state.press(Action::Jump);
+/// action_state.press(&Action::Jump);
 ///
 /// // This will only perform a limited check; consider using the `Abilitylike::ready` method instead
-/// if action_state.just_pressed(Action::Jump) && cooldowns.ready(Action::Jump).is_ok() {
+/// if action_state.just_pressed(&Action::Jump) && cooldowns.ready(Action::Jump).is_ok() {
 ///    // Actually do the jumping thing here
 ///    // Remember to actually begin the cooldown if you jumped!
 ///    cooldowns.trigger(Action::Jump);
@@ -53,9 +53,8 @@ use std::marker::PhantomData;
 pub struct CooldownState<A: Abilitylike> {
     /// The [`Cooldown`] of each action
     ///
-    /// The position in this vector corresponds to [`Actionlike::index`].
     /// If [`None`], the action can always be used
-    cooldown_vec: Vec<Option<Cooldown>>,
+    cooldown_map: HashMap<A, Cooldown>,
     /// A shared cooldown between all actions of type `A`.
     ///
     /// No action of type `A` will be ready unless this is ready.
@@ -69,7 +68,7 @@ impl<A: Abilitylike> Default for CooldownState<A> {
     /// By default, cooldowns are not set.
     fn default() -> Self {
         CooldownState {
-            cooldown_vec: A::variants().map(|_| None).collect(),
+            cooldown_map: HashMap::new(),
             global_cooldown: None,
             _phantom: PhantomData,
         }
@@ -90,7 +89,7 @@ impl<A: Abilitylike> CooldownState<A> {
     /// use leafwing_abilities::Abilitylike;
     /// use leafwing_input_manager::Actionlike;
     ///
-    /// #[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Eq, Debug, Reflect)]
+    /// #[derive(Actionlike, Abilitylike, Clone, Copy, Hash, PartialEq, Eq, Debug, Reflect)]
     /// enum Action {
     ///     Run,
     ///     Jump,
@@ -164,37 +163,33 @@ impl<A: Abilitylike> CooldownState<A> {
     /// use `charges.map(|res| res.into_inner())` to convert it to the correct form.
     pub fn tick(&mut self, delta_time: Duration, maybe_charges: Option<&mut ChargeState<A>>) {
         if let Some(charge_state) = maybe_charges {
-            for action in A::variants() {
-                if let Some(ref mut cooldown) = self.get_mut(action.clone()) {
-                    let charges = charge_state.get_mut(action.clone());
-                    cooldown.tick(delta_time, charges);
-                }
+            for (action, cooldown) in self.cooldown_map.iter_mut() {
+                let charges = charge_state.get_mut(action.clone());
+                cooldown.tick(delta_time, charges);
             }
         } else {
-            for action in A::variants() {
-                if let Some(ref mut cooldown) = self.get_mut(action.clone()) {
-                    cooldown.tick(delta_time, &mut None);
-                }
+            for (_, cooldown) in self.cooldown_map.iter_mut() {
+                cooldown.tick(delta_time, None);
             }
         }
 
         if let Some(global_cooldown) = self.global_cooldown.as_mut() {
-            global_cooldown.tick(delta_time, &mut None);
+            global_cooldown.tick(delta_time, None);
         }
     }
 
     /// The cooldown associated with the specified `action`, if any.
     #[inline]
     #[must_use]
-    pub fn get(&self, action: A) -> &Option<Cooldown> {
-        &self.cooldown_vec[action.index()]
+    pub fn get(&self, action: A) -> Option<&Cooldown> {
+        self.cooldown_map.get(&action)
     }
 
     /// A mutable reference to the cooldown associated with the specified `action`, if any.
     #[inline]
     #[must_use]
-    pub fn get_mut(&mut self, action: A) -> &mut Option<Cooldown> {
-        &mut self.cooldown_vec[action.index()]
+    pub fn get_mut(&mut self, action: A) -> Option<&mut Cooldown> {
+        self.cooldown_map.get_mut(&action)
     }
 
     /// Set a cooldown for the specified `action`.
@@ -202,7 +197,7 @@ impl<A: Abilitylike> CooldownState<A> {
     /// If a cooldown already existed, it will be replaced by a new cooldown with the specified duration.
     #[inline]
     pub fn set(&mut self, action: A, cooldown: Cooldown) -> &mut Self {
-        *self.get_mut(action) = Some(cooldown);
+        self.cooldown_map.insert(action, cooldown);
         self
     }
 
@@ -218,13 +213,13 @@ impl<A: Abilitylike> CooldownState<A> {
     /// Returns an iterator of references to the underlying non-[`None`] [`Cooldown`]s
     #[inline]
     pub fn iter(&self) -> impl Iterator<Item = &Cooldown> {
-        self.cooldown_vec.iter().flatten()
+        self.cooldown_map.values()
     }
 
     /// Returns an iterator of mutable references to the underlying non-[`None`] [`Cooldown`]s
     #[inline]
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Cooldown> {
-        self.cooldown_vec.iter_mut().flatten()
+        self.cooldown_map.values_mut()
     }
 }
 
@@ -246,10 +241,10 @@ impl<A: Abilitylike> CooldownState<A> {
 /// cooldown.trigger();
 /// assert_eq!(cooldown.remaining(), Duration::from_secs(3));
 ///
-/// cooldown.tick(Duration::from_secs(1), &mut None);
+/// cooldown.tick(Duration::from_secs(1), None);
 /// assert_eq!(cooldown.ready(), Err(CannotUseAbility::OnCooldown));
 ///
-/// cooldown.tick(Duration::from_secs(5), &mut None);
+/// cooldown.tick(Duration::from_secs(5), None);
 /// let triggered = cooldown.trigger();
 /// assert!(triggered.is_ok());
 ///
@@ -295,7 +290,7 @@ impl Cooldown {
     /// Advance the cooldown by `delta_time`.
     ///
     /// If the elapsed time is enough to reset the cooldown, the number of available charges.
-    pub fn tick(&mut self, delta_time: Duration, charges: &mut Option<Charges>) {
+    pub fn tick(&mut self, delta_time: Duration, charges: Option<&mut Charges>) {
         // Don't tick cooldowns when they are fully elapsed
         if self.elapsed_time == self.max_time {
             return;
@@ -429,7 +424,7 @@ mod tick_tests {
     fn tick_has_no_effect_on_fresh_cooldown() {
         let cooldown = Cooldown::from_secs(1.);
         let mut cloned_cooldown = cooldown.clone();
-        cloned_cooldown.tick(Duration::from_secs_f32(1.234), &mut None);
+        cloned_cooldown.tick(Duration::from_secs_f32(1.234), None);
         assert_eq!(cooldown, cloned_cooldown);
     }
 
@@ -456,7 +451,7 @@ mod tick_tests {
         let _ = cloned_cooldown.trigger();
         assert!(cooldown != cloned_cooldown);
 
-        cloned_cooldown.tick(Duration::from_millis(123), &mut None);
+        cloned_cooldown.tick(Duration::from_millis(123), None);
         assert!(cooldown != cloned_cooldown);
     }
 
@@ -466,7 +461,7 @@ mod tick_tests {
         let _ = cooldown.trigger();
         assert_eq!(cooldown.ready(), Err(CannotUseAbility::OnCooldown));
 
-        cooldown.tick(Duration::from_secs(3), &mut None);
+        cooldown.tick(Duration::from_secs(3), None);
         assert!(cooldown.ready().is_ok());
     }
 
