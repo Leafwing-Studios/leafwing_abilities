@@ -5,6 +5,8 @@ use bevy::{prelude::*, reflect::Reflect};
 use leafwing_abilities::prelude::*;
 use leafwing_input_manager::{plugin::InputManagerSystem, prelude::*};
 
+use bevy::color::palettes::css::*;
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
@@ -80,8 +82,8 @@ struct CookieBundle {
 }
 
 impl CookieBundle {
-    const COOKIE_CLICKED_COLOR: Color = Color::BEIGE;
-    const COOKIE_COLOR: Color = Color::GOLD;
+    const COOKIE_CLICKED_COLOR: Srgba = BEIGE;
+    const COOKIE_COLOR: Srgba = BROWN;
 
     /// Creates a Cookie bundle with a random position.
     fn new() -> CookieBundle {
@@ -93,7 +95,7 @@ impl CookieBundle {
                     width: Val::Px(100.),
                     ..Default::default()
                 },
-                background_color: BackgroundColor(Self::COOKIE_COLOR),
+                background_color: BackgroundColor(Self::COOKIE_COLOR.into()),
                 ..default()
             },
             abilities_bundle: AbilitiesBundle {
