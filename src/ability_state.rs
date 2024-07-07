@@ -34,7 +34,7 @@ pub struct AbilityState<A: Abilitylike, P: Pool + Component = NullPool> {
     pub cooldowns: &'static mut CooldownState<A>,
     /// The [`Pool`] of resources of type `P` that should be spent
     pub pool: Option<&'static mut P>,
-    /// The [`AbilityCosts] of each ability, in terms of [`P::Quantity`](Pool::Quantity)
+    /// The [`AbilityCosts`] of each ability, in terms of [`P::Quantity`](Pool::Quantity)
     pub ability_costs: Option<&'static mut AbilityCosts<A, P>>,
 }
 
