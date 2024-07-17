@@ -165,9 +165,9 @@ impl<A: Abilitylike> ChargeState<A> {
     /// ]);
     /// ```
     #[must_use]
-    pub fn new(action_cooldown_pairs: impl IntoIterator<Item = (A, Charges)>) -> Self {
+    pub fn new(action_chargestate_pairs: impl IntoIterator<Item = (A, Charges)>) -> Self {
         let mut charge_state = ChargeState::default();
-        for (action, charges) in action_cooldown_pairs.into_iter() {
+        for (action, charges) in action_chargestate_pairs.into_iter() {
             charge_state.set(action, charges);
         }
         charge_state
