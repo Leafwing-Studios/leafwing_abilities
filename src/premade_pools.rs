@@ -11,6 +11,8 @@ use derive_more::{Add, AddAssign, Sub, SubAssign};
 
 /// A premade resource pool for life (aka health, hit points or HP).
 pub mod life {
+    use bevy::reflect::Reflect;
+
     use crate::pool::RegeneratingPool;
 
     use super::*;
@@ -19,7 +21,7 @@ pub mod life {
     /// If they lose it all, they die or pass out.
     ///
     /// This is intended to be stored as a component on each entity.
-    #[derive(Debug, Clone, PartialEq, Component, Resource)]
+    #[derive(Debug, Clone, PartialEq, Component, Resource, Reflect)]
     pub struct LifePool {
         /// The current life.
         current: Life,
@@ -52,7 +54,7 @@ pub mod life {
     ///
     /// This can be used for damage computations, life regeneration, healing and so on.
     #[derive(
-        Debug, Clone, Copy, PartialEq, PartialOrd, Default, Add, Sub, AddAssign, SubAssign,
+        Debug, Clone, Copy, PartialEq, PartialOrd, Default, Add, Sub, AddAssign, SubAssign, Reflect,
     )]
     pub struct Life(pub f32);
 
@@ -172,6 +174,8 @@ pub mod life {
 
 /// A premade resource pool for mana (aka MP).
 pub mod mana {
+    use bevy::reflect::Reflect;
+
     use crate::pool::RegeneratingPool;
 
     use super::*;
@@ -180,7 +184,7 @@ pub mod mana {
     /// Units must spend mana to cast spells according to their [`AbilityCosts<A, Mana>`](crate::pool::AbilityCosts) component.
     ///
     /// This is intended to be stored as a component on each entity.
-    #[derive(Debug, Clone, PartialEq, Component, Resource)]
+    #[derive(Debug, Clone, PartialEq, Component, Resource, Reflect)]
     pub struct ManaPool {
         /// The current mana.
         current: Mana,
@@ -212,7 +216,7 @@ pub mod mana {
     ///
     /// This can be used for ability costs, mana regeneration and so on.
     #[derive(
-        Debug, Clone, Copy, PartialEq, PartialOrd, Default, Add, Sub, AddAssign, SubAssign,
+        Debug, Clone, Copy, PartialEq, PartialOrd, Default, Add, Sub, AddAssign, SubAssign, Reflect,
     )]
     pub struct Mana(pub f32);
 

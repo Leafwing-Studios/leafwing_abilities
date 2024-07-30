@@ -2,7 +2,10 @@
 //! Actions may only be used if at least one charge is available.
 //! Unlike pools, charges are not shared across abilities.
 
-use bevy::ecs::prelude::{Component, Resource};
+use bevy::{
+    ecs::prelude::{Component, Resource},
+    reflect::Reflect,
+};
 use std::marker::PhantomData;
 
 use crate::{Abilitylike, CannotUseAbility};
@@ -80,10 +83,11 @@ use std::collections::HashMap;
 ///     Action::Spell.trigger(&mut abilities_bundle.charges, &mut abilities_bundle.cooldowns, Some(&mut mana_bundle.pool), Some(&mut mana_bundle.ability_costs));
 /// }
 /// ```
-#[derive(Resource, Component, Clone, PartialEq, Eq, Debug)]
+#[derive(Resource, Component, Clone, PartialEq, Eq, Debug, Reflect)]
 pub struct ChargeState<A: Abilitylike> {
     /// The underlying [`Charges`].
     charges_map: HashMap<A, Charges>,
+    #[reflect(ignore)]
     _phantom: PhantomData<A>,
 }
 
@@ -100,7 +104,7 @@ impl<A: Abilitylike> Default for ChargeState<A> {
 ///
 /// Charges refresh when [`Charges::refresh`] is called manually,
 /// or when the corresponding cooldown expires (if the [`InputManagerPlugin`](crate::plugin::InputManagerPlugin) is added).
-#[derive(Clone, PartialEq, Eq, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug, Reflect)]
 pub struct Charges {
     current: u8,
     max: u8,
@@ -111,7 +115,7 @@ pub struct Charges {
 }
 
 /// What happens when [`Charges`] are replenished?
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Reflect)]
 pub enum ReplenishStrategy {
     /// A single charge will be recovered.
     ///
@@ -124,7 +128,7 @@ pub enum ReplenishStrategy {
 }
 
 /// How do these charges replenish when cooldowns are refreshed?
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Reflect)]
 pub enum CooldownStrategy {
     /// Cooldowns refresh will have no effect on the charges.
     Ignore,

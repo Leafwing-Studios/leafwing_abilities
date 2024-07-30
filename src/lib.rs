@@ -4,7 +4,7 @@
 #![doc = include_str!("../README.md")]
 
 use crate::cooldown::CooldownState;
-use bevy::ecs::prelude::*;
+use bevy::{ecs::prelude::*, reflect::Reflect};
 use charges::{ChargeState, Charges};
 use cooldown::Cooldown;
 use leafwing_input_manager::Actionlike;
@@ -219,7 +219,7 @@ pub fn trigger_ability<P: Pool>(
 /// If you would like to track resource costs for your abilities, combine this with a [`PoolBundle`](crate::pool::PoolBundle).
 ///
 /// Use with [`AbilityPlugin`](crate::plugin::AbilityPlugin), providing the same enum type to both.
-#[derive(Bundle, Clone, Debug, PartialEq, Eq)]
+#[derive(Bundle, Clone, Debug, PartialEq, Eq, Reflect)]
 pub struct AbilitiesBundle<A: Abilitylike> {
     /// A [`CooldownState`] component
     pub cooldowns: CooldownState<A>,
