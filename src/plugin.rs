@@ -1,6 +1,6 @@
 //! Contains main plugin exported by this crate.
 
-use crate::Abilitylike;
+use crate::{AbilitiesBundle, Abilitylike};
 use bevy::ecs::prelude::*;
 use core::marker::PhantomData;
 
@@ -64,6 +64,9 @@ impl<A: Abilitylike> Plugin for AbilityPlugin<A> {
                 .in_set(InputManagerSystem::Tick)
                 .before(InputManagerSystem::Update),
         );
+
+        // Type registration
+        app.register_type::<AbilitiesBundle<A>>();
 
         // Resources
         app.init_resource::<ToggleActions<A>>();

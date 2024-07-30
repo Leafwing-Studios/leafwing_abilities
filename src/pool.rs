@@ -6,9 +6,11 @@
 //! Pools have a maximum value and a minimum value (almost always zero), can regenerate over time, and can be spent to pay for abilities.
 //!
 //! The [`regenerate_resource_pool`](crate::systems::regenerate_resource_pool) system will regenerate resource pools of a given type if manually added.
+//!
+//! Remember to manually register these types for reflection with [`App::register_type`](bevy::app::App::register_type) if you wish to serialize or inspect them.
 
-use bevy::ecs::prelude::*;
 use bevy::utils::Duration;
+use bevy::{ecs::prelude::*, reflect::Reflect};
 use core::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
 use std::{collections::HashMap, marker::PhantomData};
 use thiserror::Error;
@@ -146,7 +148,7 @@ pub trait RegeneratingPool: Pool {
 pub struct MaxPoolLessThanMin;
 
 /// Stores the cost (in terms of the [`Pool::Quantity`] of ability) associated with each ability of type `A`.
-#[derive(Component, Debug)]
+#[derive(Component, Resource, Debug, Reflect)]
 pub struct AbilityCosts<A: Abilitylike, P: Pool> {
     /// The underlying cost of each ability.
     cost_map: HashMap<A, P::Quantity>,
@@ -270,12 +272,15 @@ impl<A: Abilitylike, P: Pool> AbilityCosts<A, P> {
 /// as you want the other functionality of pools (current, max, regen, depletion)
 /// but often cannot spend it on abilities.
 ///
-/// # Important Note
+/// # Usage
 ///
 /// Note that resource pools are not controlled by [`AbilityPlugin`](crate::plugin::AbilityPlugin).
 /// If you want regeneration to occur automatically, add [`regenerate_resource_pool`](crate::systems::regenerate_resource_pool)
 /// to your schedule.
-#[derive(Bundle)]
+///
+/// These types are not automatically registered by [`AbilityPlugin`](crate::plugin::AbilityPlugin).
+/// You must register them manually with [`App::register_type`](bevy::app::App::register_type) if you wish to serialize or inspect them.
+#[derive(Bundle, Reflect)]
 pub struct PoolBundle<A: Abilitylike, P: Pool + Component> {
     /// The resource pool used to pay for abilities
     pub pool: P,

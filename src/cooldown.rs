@@ -5,8 +5,11 @@ use crate::{
     Abilitylike, CannotUseAbility,
 };
 
-use bevy::ecs::prelude::{Component, Resource};
 use bevy::utils::Duration;
+use bevy::{
+    ecs::prelude::{Component, Resource},
+    reflect::Reflect,
+};
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, marker::PhantomData};
 
@@ -49,7 +52,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// // We just jumped, so the cooldown isn't ready yet
 /// assert_eq!(cooldowns.ready(Action::Jump), Err(CannotUseAbility::OnCooldown));
 /// ```
-#[derive(Resource, Component, Debug, Clone, PartialEq, Eq)]
+#[derive(Resource, Component, Debug, Clone, PartialEq, Eq, Reflect)]
 pub struct CooldownState<A: Abilitylike> {
     /// The [`Cooldown`] of each action
     ///
@@ -61,6 +64,7 @@ pub struct CooldownState<A: Abilitylike> {
     /// Whenever any cooldown for an action of type `A` is triggered,
     /// this global cooldown is triggered.
     pub global_cooldown: Option<Cooldown>,
+    #[reflect(ignore)]
     _phantom: PhantomData<A>,
 }
 
@@ -251,7 +255,7 @@ impl<A: Abilitylike> CooldownState<A> {
 /// cooldown.refresh();
 /// assert!(cooldown.ready().is_ok());
 /// ```
-#[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize, Reflect)]
 pub struct Cooldown {
     max_time: Duration,
     /// The amount of time that has elapsed since all [`Charges`](crate::charges::Charges) were fully replenished.
