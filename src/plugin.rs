@@ -40,6 +40,14 @@ pub struct AbilityPlugin<A: Abilitylike> {
     _phantom: PhantomData<A>,
 }
 
+/// System sets provided by [`leafwing_abilities`](crate).
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+pub enum AbilitySystem {
+    /// Updates the cooldowns of all abilities,
+    /// including their charges and global cooldowns if applicable.
+    TickCooldowns,
+}
+
 // Deriving default induces an undesired bound on the generic
 impl<A: Abilitylike> Default for AbilityPlugin<A> {
     fn default() -> Self {
@@ -57,6 +65,7 @@ impl<A: Abilitylike> Plugin for AbilityPlugin<A> {
         app.add_systems(
             PreUpdate,
             tick_cooldowns::<A>
+                .in_set(AbilitySystem::TickCooldowns)
                 .in_set(InputManagerSystem::Tick)
                 .before(InputManagerSystem::Update),
         );
