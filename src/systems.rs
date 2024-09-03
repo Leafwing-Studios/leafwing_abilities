@@ -5,7 +5,6 @@ use crate::{charges::ChargeState, cooldown::CooldownState, Abilitylike};
 
 use bevy::ecs::prelude::*;
 use bevy::time::Time;
-use leafwing_input_manager::plugin::ToggleActions;
 
 /// Advances all [`CooldownState`] components and resources for ability type `A`.
 pub fn tick_cooldowns<A: Abilitylike>(
@@ -51,9 +50,4 @@ pub fn regenerate_resource_pool<P: RegeneratingPool + Component + Resource>(
     if let Some(mut pool) = pool_res {
         pool.regenerate(delta_time);
     }
-}
-
-/// Returns [`ShouldRun::No`] if [`DisableInput`] exists and [`ShouldRun::Yes`] otherwise
-pub(super) fn actions_toggled<A: Abilitylike>(toggle_actions: Res<ToggleActions<A>>) -> bool {
-    toggle_actions.enabled
 }

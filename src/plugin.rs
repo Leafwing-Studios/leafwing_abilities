@@ -1,11 +1,11 @@
 //! Contains main plugin exported by this crate.
 
-use crate::{AbilitiesBundle, Abilitylike};
+use crate::Abilitylike;
 use bevy::ecs::prelude::*;
 use core::marker::PhantomData;
 
 use bevy::app::{App, Plugin, PreUpdate};
-use leafwing_input_manager::plugin::{InputManagerSystem, ToggleActions};
+use leafwing_input_manager::plugin::InputManagerSystem;
 
 /// A [`Plugin`] that collects [`Input`](bevy::input::Input) from disparate sources, producing an [`ActionState`](crate::action_state::ActionState) that can be conveniently checked
 ///
@@ -20,9 +20,6 @@ use leafwing_input_manager::plugin::{InputManagerSystem, ToggleActions};
 /// and adding a copy of this plugin for each `Actionlike` type.
 ///  
 /// ## Systems
-///
-/// All systems added by this plugin can be dynamically enabled and disabled by setting the value of the [`ToggleActions<A>`] resource is set.
-/// This can be useful when working with states to pause the game, navigate menus or so on.
 ///
 /// **WARNING:** These systems run during [`CoreStage::PreUpdate`].
 /// If you have systems that care about inputs and actions that also run during this stage,
@@ -60,12 +57,8 @@ impl<A: Abilitylike> Plugin for AbilityPlugin<A> {
         app.add_systems(
             PreUpdate,
             tick_cooldowns::<A>
-                .run_if(actions_toggled::<A>)
                 .in_set(InputManagerSystem::Tick)
                 .before(InputManagerSystem::Update),
         );
-
-        // Resources
-        app.init_resource::<ToggleActions<A>>();
     }
 }
