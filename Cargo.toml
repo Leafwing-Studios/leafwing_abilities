@@ -46,4 +46,4 @@ bevy = { version = "0.14", default-features = false, features = [
 	"default_font",
 ] }
 # Needed to provide implementations for standard input devices
-leafwing_input_manager = { version = "0.15", default-features = true }
+leafwing-input-manager = { version = "0.15", default-features = true }
