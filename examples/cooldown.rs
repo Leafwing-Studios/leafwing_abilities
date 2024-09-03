@@ -63,9 +63,7 @@ impl CookieAbility {
 
     fn key_bindings() -> InputMap<CookieAbility> {
         // CookieAbility::AddOne is pressed manually when the cookie is clicked on
-        InputMap::default()
-            .insert(CookieAbility::DoubleCookies, KeyCode::Space)
-            .build()
+        InputMap::default().with(CookieAbility::DoubleCookies, KeyCode::Space)
     }
 }
 
