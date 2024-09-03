@@ -65,9 +65,6 @@ impl<A: Abilitylike> Plugin for AbilityPlugin<A> {
                 .before(InputManagerSystem::Update),
         );
 
-        // Type registration
-        app.register_type::<AbilitiesBundle<A>>();
-
         // Resources
         app.init_resource::<ToggleActions<A>>();
     }

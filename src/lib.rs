@@ -250,7 +250,7 @@ mod tests {
 
     use crate as leafwing_abilities;
 
-    #[derive(Abilitylike, Actionlike, Reflect, Clone, Hash, PartialEq, Eq)]
+    #[derive(Abilitylike, Actionlike, Reflect, Clone, Hash, PartialEq, Eq, Debug)]
     enum TestAbility {
         TestAction,
     }
