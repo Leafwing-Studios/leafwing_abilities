@@ -28,7 +28,7 @@ bevy = { version = "0.14", default-features = false, features = [
 	"bevy_gilrs",
 ] }
 serde = { version = "1.0", features = ["derive"] }
-leafwing-input-manager = "0.14"
+leafwing-input-manager = { version = "0.15", default-features = false }
 
 leafwing_abilities_macros = { path = "macros", version = "0.3" }
 thiserror = "1.0.37"
