@@ -15,6 +15,7 @@
 - to better support working with multiple resource pools for a single `Abilitylike`:
   - `ready_no_cost` and `trigger_no_cost` have been added to `Abilitylike`
   - when working with multiple resource pools, you should pass in `NullPool` as the type argument for `AbilityState`
+- `Default` is now implemented for `Charges` and `Cooldown`
 
 ## Bugs (0.9)
 
