@@ -127,6 +127,10 @@ pub mod life {
         fn set_regen_per_second(&mut self, new_regen_per_second: Self::Quantity) {
             self.regen_per_second = new_regen_per_second;
         }
+
+        fn regenerate(&mut self, delta_time: std::time::Duration) {
+            self.set_current(self.current + self.regen_per_second * delta_time.as_secs_f32());
+        }
     }
 
     impl Add<Life> for LifePool {
@@ -288,6 +292,10 @@ pub mod mana {
 
         fn set_regen_per_second(&mut self, new_regen_per_second: Self::Quantity) {
             self.regen_per_second = new_regen_per_second;
+        }
+
+        fn regenerate(&mut self, delta_time: std::time::Duration) {
+            self.set_current(self.current + self.regen_per_second * delta_time.as_secs_f32());
         }
     }
 

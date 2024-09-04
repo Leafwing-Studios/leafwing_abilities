@@ -11,7 +11,7 @@
 
 use bevy::utils::Duration;
 use bevy::{ecs::prelude::*, reflect::Reflect};
-use core::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
+use core::ops::{Add, AddAssign, Sub, SubAssign};
 use std::{collections::HashMap, marker::PhantomData};
 use thiserror::Error;
 
@@ -30,8 +30,6 @@ pub trait Pool: Sized {
         + Sub<Output = Self::Quantity>
         + AddAssign
         + SubAssign
-        + Mul<f32, Output = Self::Quantity>
-        + Div<f32, Output = Self::Quantity>
         + PartialEq
         + PartialOrd
         + Clone
@@ -134,10 +132,7 @@ pub trait RegeneratingPool: Pool {
     ///
     /// Called in the [`regenerate_resource_pool`](crate::systems::regenerate_resource_pool) system.
     /// Can also be called in your own regeneration systems.
-    fn regenerate(&mut self, delta_time: Duration) {
-        let pool_regained = self.regen_per_second() * delta_time.as_secs_f32();
-        self.replenish(pool_regained)
-    }
+    fn regenerate(&mut self, delta_time: Duration);
 }
 
 /// The maximum value for a [`Pool`] was set to be less than [`Pool::MIN`].

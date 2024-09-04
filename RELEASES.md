@@ -2,9 +2,16 @@
 
 ## Version 0.9
 
+## Dependencies (0.9)
+
 - now support `leafwing-input-manager` 0.15
+
+## Usability (0.9)
+
 - all types provided by this library are now `Reflect`
 - removed `ToggleActions`: this functionality no longer makes sense with changes to how LWIM disables actions. Use run conditions directly on the new `AbilitySystem::TickCooldowns` system set
+- the associated type `Pool::Quantity` no longer needs to be able to be multiplied and divided by f32s to ease working with integer-based resource pools
+  - in exchange, the `RegeneratingPool::regenerate` method no longer has a default implementation
 
 ## Version 0.8
 
