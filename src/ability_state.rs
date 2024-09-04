@@ -233,7 +233,7 @@ mod tests {
 /// Used in [`AbilityState`] to get the type system to play nice when no resource pool type is needed.
 ///
 /// Values of this type should never be constructed.
-#[derive(Component)]
+#[derive(Component, Debug, Default)]
 pub struct NullPool;
 
 impl Pool for NullPool {
