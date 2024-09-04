@@ -11,7 +11,7 @@
 
 use bevy::utils::Duration;
 use bevy::{ecs::prelude::*, reflect::Reflect};
-use core::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
+use core::ops::{Add, AddAssign, Sub, SubAssign};
 use std::{collections::HashMap, marker::PhantomData};
 use thiserror::Error;
 
@@ -20,7 +20,14 @@ use crate::{Abilitylike, CannotUseAbility};
 /// A reservoir of a resource that can be used to pay for abilities, or keep track of character state.
 ///
 /// Each type that implements this trait should be stored on a component (or, if your actions are globally unique, a resource),
-/// and contains information about the current, max and regeneration rates
+/// and contains information about the current and max values.
+///
+/// There are two core benefits to using pools, rather than creating your own solutions:
+///
+/// 1. It is impossible to accidentally set the value outside of the bounds of the pool.
+/// 2. The [`AbilityCosts`] component can be used to automatically check if an ability can be used.
+///
+/// See [`RegeneratingPool`] for pools that regenerate over time.
 pub trait Pool: Sized {
     /// A type that tracks the quantity within a pool.
     ///
@@ -30,8 +37,6 @@ pub trait Pool: Sized {
         + Sub<Output = Self::Quantity>
         + AddAssign
         + SubAssign
-        + Mul<f32, Output = Self::Quantity>
-        + Div<f32, Output = Self::Quantity>
         + PartialEq
         + PartialOrd
         + Clone
@@ -134,10 +139,7 @@ pub trait RegeneratingPool: Pool {
     ///
     /// Called in the [`regenerate_resource_pool`](crate::systems::regenerate_resource_pool) system.
     /// Can also be called in your own regeneration systems.
-    fn regenerate(&mut self, delta_time: Duration) {
-        let pool_regained = self.regen_per_second() * delta_time.as_secs_f32();
-        self.replenish(pool_regained)
-    }
+    fn regenerate(&mut self, delta_time: Duration);
 }
 
 /// The maximum value for a [`Pool`] was set to be less than [`Pool::MIN`].
