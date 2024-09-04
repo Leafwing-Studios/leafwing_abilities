@@ -120,6 +120,39 @@ pub trait Abilitylike: Actionlike {
                 .copied(),
         )
     }
+
+    /// Triggers this ability, depleting a charge if available.
+    ///
+    /// Returns `true` if the ability could be used, and `false` if it could not be.
+    /// Abilities can only be used if they are ready.
+    ///     
+    /// Calls [`Abilitylike::trigger`], passing in [`None`] for both the pools or costs.
+    /// This is useful when you don't have any pools or costs to check,
+    /// or when multiple distinct pools may be needed.
+    fn trigger_no_costs(
+        &self,
+        charges: &mut ChargeState<Self>,
+        cooldowns: &mut CooldownState<Self>,
+    ) -> Result<(), CannotUseAbility> {
+        self.trigger::<NullPool>(charges, cooldowns, None, None)
+    }
+
+    /// Is this ability ready?
+    ///
+    /// If this ability has charges, at least one charge must be available.
+    /// If this ability has a cooldown but no charges, the cooldown must be ready.
+    /// Otherwise, returns [`Ok(())`].
+    ///
+    /// Calls [`Abilitylike::ready`], passing in [`None`] for both the pools or costs.
+    /// This is useful when you don't have any pools or costs to check,
+    /// or when multiple distinct pools may be needed.
+    fn ready_no_costs(
+        &self,
+        charges: &ChargeState<Self>,
+        cooldowns: &CooldownState<Self>,
+    ) -> Result<(), CannotUseAbility> {
+        self.ready::<NullPool>(charges, cooldowns, None, None)
+    }
 }
 
 /// An [`Error`](std::error::Error) type that explains why an ability could not be used.
