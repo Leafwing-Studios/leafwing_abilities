@@ -23,6 +23,24 @@ use leafwing_input_manager::action_state::ActionState;
 /// Once you have a [`AbilityStateItem`] by calling `.iter_mut()` or `.single_mut` on your query
 /// (or a [`AbilityStateReadOnlyItem`] by calling `.iter()` or `.single`),
 /// you can use the methods defined there to perform common tasks quickly and reliably.
+///
+/// ## No resource pool
+///
+/// When working with abilities that don't require a resource pool, simply pass in [`NullPool`] as the pool type.
+/// The absence of a pool will be handled gracefully by the methods in [`Abilitylike`].
+///
+/// ## Multiple resource pools
+///
+/// When working with abilities that require multiple resource pools, there are two options:
+///
+/// 1. Create a new [`Pool`] type that contains all of the possible resource pools.
+/// 2. Pass in [`NullPool`] and handle the resource costs manually in your ability implementations.
+///
+/// The first solution is reliable and type-safe, but limits you to a fixed collection of resource pools
+/// and can be wasteful and confusing, as the majority of abilities or characters will only use a single resource pool.
+///
+/// The second solution is more flexible, but requires you to handle the resource costs manually.
+/// Make sure to check if the resource cost can be paid before calling [`Abilitylike::trigger`]!
 #[derive(QueryData)]
 #[query_data(mutable)]
 pub struct AbilityState<A: Abilitylike, P: Pool + Component = NullPool> {

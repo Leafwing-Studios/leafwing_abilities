@@ -14,6 +14,7 @@
   - in exchange, the `RegeneratingPool::regenerate` method no longer has a default implementation
 - to better support working with multiple resource pools for a single `Abilitylike`:
   - `ready_no_cost` and `trigger_no_cost` have been added to `Abilitylike`
+  - when working with multiple resource pools, you should pass in `NullPool` as the type argument for `AbilityState`
 
 ## Version 0.8
 
