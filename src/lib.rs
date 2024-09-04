@@ -231,7 +231,7 @@ pub fn trigger_ability<P: Pool>(
     ability_ready(
         charges.as_deref(),
         cooldown.as_deref(),
-        pool.map(|p| &*p),
+        pool.as_deref(),
         cost,
     )?;
 
@@ -239,6 +239,14 @@ pub fn trigger_ability<P: Pool>(
         charges.expend()?;
     } else if let Some(ref mut cooldown) = cooldown {
         cooldown.trigger()?;
+    }
+
+    if let Some(pool) = pool {
+        if let Some(cost) = cost {
+            let _pool_result = pool.expend(cost);
+            // This is good to check, but panics in release mode are miserable
+            debug_assert!(_pool_result.is_ok());
+        }
     }
 
     Ok(())

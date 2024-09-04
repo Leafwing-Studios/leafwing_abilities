@@ -16,6 +16,11 @@
   - `ready_no_cost` and `trigger_no_cost` have been added to `Abilitylike`
   - when working with multiple resource pools, you should pass in `NullPool` as the type argument for `AbilityState`
 
+## Bugs (0.9)
+
+- `Actionlike::trigger` and friends now expends resource costs correctly
+  - if you were working around this bug, remember to remove your workaround to avoid double-spending!
+
 ## Version 0.8
 
 - now supports Bevy 0.14
