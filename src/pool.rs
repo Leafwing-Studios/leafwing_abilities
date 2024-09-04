@@ -20,7 +20,14 @@ use crate::{Abilitylike, CannotUseAbility};
 /// A reservoir of a resource that can be used to pay for abilities, or keep track of character state.
 ///
 /// Each type that implements this trait should be stored on a component (or, if your actions are globally unique, a resource),
-/// and contains information about the current, max and regeneration rates
+/// and contains information about the current and max values.
+///
+/// There are two core benefits to using pools, rather than creating your own solutions:
+///
+/// 1. It is impossible to accidentally set the value outside of the bounds of the pool.
+/// 2. The [`AbilityCosts`] component can be used to automatically check if an ability can be used.
+///
+/// See [`RegeneratingPool`] for pools that regenerate over time.
 pub trait Pool: Sized {
     /// A type that tracks the quantity within a pool.
     ///
