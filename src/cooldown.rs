@@ -11,7 +11,7 @@ use bevy::{
     reflect::Reflect,
 };
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, marker::PhantomData};
+use std::{collections::HashMap, fmt::Display, marker::PhantomData};
 
 /// The time until each action of type `A` can be used again.
 ///
@@ -412,6 +412,12 @@ impl Cooldown {
         self.elapsed_time = self
             .max_time
             .saturating_sub(time_remaining.clamp(Duration::ZERO, self.max_time));
+    }
+}
+
+impl Display for Cooldown {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?} / {:?}", self.elapsed_time, self.max_time)
     }
 }
 

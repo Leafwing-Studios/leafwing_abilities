@@ -6,7 +6,7 @@ use bevy::{
     ecs::prelude::{Component, Resource},
     reflect::Reflect,
 };
-use std::marker::PhantomData;
+use std::{fmt::Display, marker::PhantomData};
 
 use crate::{Abilitylike, CannotUseAbility};
 use std::collections::HashMap;
@@ -112,6 +112,12 @@ pub struct Charges {
     pub replenish_strat: ReplenishStrategy,
     /// How should the corresponding [`Cooldown`](crate::cooldown::Cooldown) interact with these charges?
     pub cooldown_strat: CooldownStrategy,
+}
+
+impl Display for Charges {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}/{}", self.current, self.max)
+    }
 }
 
 /// What happens when [`Charges`] are replenished?
