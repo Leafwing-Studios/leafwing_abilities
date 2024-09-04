@@ -12,6 +12,8 @@
 - removed `ToggleActions`: this functionality no longer makes sense with changes to how LWIM disables actions. Use run conditions directly on the new `AbilitySystem::TickCooldowns` system set
 - the associated type `Pool::Quantity` no longer needs to be able to be multiplied and divided by f32s to ease working with integer-based resource pools
   - in exchange, the `RegeneratingPool::regenerate` method no longer has a default implementation
+- to better support working with multiple resource pools for a single `Abilitylike`:
+  - `ready_no_cost` and `trigger_no_cost` have been added to `Abilitylike`
 
 ## Version 0.8
 
@@ -19,22 +21,22 @@
 
 ## Version 0.7
 
-### Dependencies
+### Dependencies (0.7)
 
 - now supports Bevy 0.13
 
 ## Version 0.6
 
-### Dependencies
+### Dependencies (0.6)
 
 - now supports Bevy 0.12
 
-### Documentation
+### Documentation (0.6)
 
 - fixed several typos (`@striezel`)
 - improved the documentation for `Pool::replenish`
 
-### Usability
+### Usability (0.6)
 
 - removed the required `new` method from the `Pool` trait: this method was overly restrictive, and prevented the construction of more complex pools with custom initialization parameters
   - `LifePool::new` and `ManaPool::new` methods have been added to the premade pools: do similarly for your own `Pool` types
@@ -48,30 +50,30 @@
 
 ## Version 0.5
 
-### Dependencies
+### Dependencies (0.5)
 
 - now supports Bevy 0.11
 
 ## Version 0.4
 
-### Dependencies
+### Dependencies (0.4)
 
 - now supports Bevy 0.10
 
-### Usability
+### Usability (0.4)
 
 - the premade `LifePool` and `ManaPool` types now implement the `Resource` trait.
 - the premade `Life` and `Mana` types now implement `Mul<T> for f32`, allowing you to have commutative multiplication
 
 ## Version 0.3
 
-### Dependencies
+### Dependencies (0.3)
 
 - now supports Bevy 0.9
 
 ## Version 0.2
 
-### Enhancements
+### Enhancements (0.2)
 
 - You can now store and check resource pools (like life, mana or energy) with the `Pool` trait!
   - All of the corresponding ability methods and `AbilityState` have been changed to account for this.
@@ -80,14 +82,14 @@
   - For example, you can add `PoolBundle<Mana>` to your entity to track both the `ManaPool` and the `AbilityCosts<A, ManaPool>`.
   - We've included a `LifePool` and `ManaPool` type to get you started; feel free to copy-and-paste to adapt them to your needs.
 
-### Usability
+### Usability (0.2)
 
 - All methods and functions that returned a bool now return a `Result<(), CannotUseAbility>` which explains why an action failed.
 - the `trigger_action` and `action_ready` functions were renamed to `trigger_ability` and `ability_ready`
 
 ## Version 0.1
 
-### Enhancements
+### Enhancements (0.1)
 
 - You can now store `Cooldowns` and `ActionCharges` on a per-action basis.
   - These new components are now included in the `InputManagerBundle`.
