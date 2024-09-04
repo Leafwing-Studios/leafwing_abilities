@@ -255,7 +255,7 @@ impl<A: Abilitylike> CooldownState<A> {
 /// cooldown.refresh();
 /// assert!(cooldown.ready().is_ok());
 /// ```
-#[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize, Reflect)]
+#[derive(Clone, Default, PartialEq, Eq, Debug, Serialize, Deserialize, Reflect)]
 pub struct Cooldown {
     max_time: Duration,
     /// The amount of time that has elapsed since all [`Charges`](crate::charges::Charges) were fully replenished.
