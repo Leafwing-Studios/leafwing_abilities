@@ -126,6 +126,8 @@ fn cookie_clicked(mut query: Query<(&Interaction, &mut ActionState<CookieAbility
     // by allowing you to hook into the ability state.
     if *cookie_interaction == Interaction::Pressed {
         cookie_action_state.press(&CookieAbility::AddOne);
+    } else {
+        cookie_action_state.release(&CookieAbility::AddOne);
     }
 }
 
