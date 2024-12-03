@@ -23,7 +23,7 @@ default = ["premade_pools"]
 premade_pools = []
 
 [dependencies]
-bevy = { version = "0.14", default-features = false, features = [
+bevy = { version = "0.15", default-features = false, features = [
 	"serialize",
 	"bevy_gilrs",
 ] }
@@ -35,7 +35,7 @@ thiserror = "1.0.37"
 derive_more = "0.99.17"
 
 [dev-dependencies]
-bevy = { version = "0.14", default-features = false, features = [
+bevy = { version = "0.15", default-features = false, features = [
 	"bevy_asset",
 	"bevy_sprite",
 	"bevy_text",
@@ -44,6 +44,11 @@ bevy = { version = "0.14", default-features = false, features = [
 	"bevy_core_pipeline",
 	"x11",
 	"default_font",
+	"bevy_window",        #Bugfix See: https://github.com/bevyengine/bevy/issues/16568
 ] }
 # Needed to provide implementations for standard input devices
 leafwing-input-manager = { version = "0.15", default-features = true }
+
+#TODO: remove when leafwing-input-manager 0.15 is published
+[patch.crates-io]
+leafwing-input-manager = { git = "https://github.com/pcwalton/leafwing-input-manager.git", branch = "0.15-newer" }
