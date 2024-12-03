@@ -37,7 +37,6 @@ pub mod life {
         /// # Panics
         /// Panics if `current` is greater than `max`.
         /// Panics if `current` or max is negative.
-
         pub fn new(current: Life, max: Life, regen_per_second: Life) -> Self {
             assert!(current <= max);
             assert!(current >= LifePool::MIN);

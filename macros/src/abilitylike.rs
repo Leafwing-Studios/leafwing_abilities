@@ -7,7 +7,6 @@ use syn::{DeriveInput, Ident};
 /// This approach and implementation is inspired by the `strum` crate,
 /// Copyright (c) 2019 Peter Glotfelty
 /// available under the MIT License at https://github.com/Peternator7/strum
-
 pub(crate) fn abilitylike_inner(ast: &DeriveInput) -> TokenStream {
     // Splitting the abstract syntax tree
     let enum_name = &ast.ident;
