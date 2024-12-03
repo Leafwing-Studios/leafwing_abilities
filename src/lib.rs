@@ -52,7 +52,7 @@ pub mod prelude {
 /// use leafwing_input_manager::Actionlike;
 /// use bevy::reflect::Reflect;
 ///
-/// #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Reflect)]
+/// #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Reflect, Debug)]
 /// enum PlayerAction {
 ///    // Movement
 ///    Up,

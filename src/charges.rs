@@ -21,7 +21,7 @@ use std::collections::HashMap;
 /// use leafwing_abilities::premade_pools::mana::{Mana, ManaPool};
 /// use leafwing_input_manager::Actionlike;
 ///
-/// #[derive(Actionlike, Abilitylike, Clone, Reflect, Hash, PartialEq, Eq)]
+/// #[derive(Actionlike, Abilitylike, Clone, Reflect, Hash, PartialEq, Eq, Debug)]
 /// enum Action {
 ///     // Neither cooldowns nor charges
 ///     Move,
@@ -163,7 +163,7 @@ impl<A: Abilitylike> ChargeState<A> {
     /// use leafwing_abilities::prelude::*;
     /// use leafwing_input_manager::Actionlike;
     ///
-    /// #[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
+    /// #[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Eq, Hash, Reflect, Debug)]
     /// enum Action {
     ///     Run,
     ///     Jump,
