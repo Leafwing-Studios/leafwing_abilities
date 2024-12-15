@@ -111,7 +111,7 @@ fn spawn_cookie(mut commands: Commands) {
 }
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn(Camera2d::default());
+    commands.spawn(Camera2d);
 }
 
 // We need a huge amount of space to be able to let you play this game for long enough ;)
