@@ -1,5 +1,11 @@
 # Release Notes
 
+## Version 0.10
+
+## Dependencies (0.10)
+
+- now support `bevy` 0.15 and `leafwing-input-manager` 0.16
+
 ## Version 0.9
 
 ## Dependencies (0.9)
