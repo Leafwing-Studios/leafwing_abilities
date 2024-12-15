@@ -74,7 +74,8 @@ struct Cookie;
 #[derive(Bundle)]
 struct CookieBundle {
     cookie: Cookie,
-    button_bundle: ButtonBundle,
+    node: Node,
+    background_color: BackgroundColor,
     abilities_bundle: AbilitiesBundle<CookieAbility>,
     input_manager_bundle: InputManagerBundle<CookieAbility>,
 }
@@ -87,15 +88,12 @@ impl CookieBundle {
     fn new() -> CookieBundle {
         CookieBundle {
             cookie: Cookie,
-            button_bundle: ButtonBundle {
-                style: Style {
-                    height: Val::Px(100.),
-                    width: Val::Px(100.),
-                    ..Default::default()
-                },
-                background_color: BackgroundColor(Self::COOKIE_COLOR.into()),
-                ..default()
+            node: Node {
+                height: Val::Px(100.),
+                width: Val::Px(100.),
+                ..Default::default()
             },
+            background_color: BackgroundColor(Self::COOKIE_COLOR.into()),
             abilities_bundle: AbilitiesBundle {
                 cooldowns: CookieAbility::cooldowns(),
                 ..default()
@@ -113,7 +111,7 @@ fn spawn_cookie(mut commands: Commands) {
 }
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d);
 }
 
 // We need a huge amount of space to be able to let you play this game for long enough ;)
@@ -185,20 +183,10 @@ fn reset_cookie_color(mut query: Query<&mut BackgroundColor, With<Cookie>>) {
 struct ScoreText;
 
 fn spawn_score_text(mut commands: Commands) {
-    commands
-        .spawn(TextBundle::from_section(
-            "Score: ",
-            TextStyle {
-                font_size: 50.,
-                color: Color::WHITE,
-                ..Default::default()
-            },
-        ))
-        .insert(ScoreText);
+    commands.spawn(Text::new("Score")).insert(ScoreText);
 }
 
-fn display_score(score: Res<Score>, mut query: Query<&mut Text, With<ScoreText>>) {
+fn display_score(score: Res<Score>, mut text: Single<&mut Text, With<ScoreText>>) {
     let score = score.0;
-    let mut text = query.single_mut();
-    text.sections[0].value = format!("Score: {score}");
+    **text = Text::new(format!("Score: {}", score));
 }

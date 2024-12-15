@@ -23,27 +23,20 @@ default = ["premade_pools"]
 premade_pools = []
 
 [dependencies]
-bevy = { version = "0.14", default-features = false, features = [
+bevy = { version = "0.15", default-features = false, features = [
 	"serialize",
 	"bevy_gilrs",
 ] }
 serde = { version = "1.0", features = ["derive"] }
-leafwing-input-manager = { version = "0.15", default-features = false }
+leafwing-input-manager = { version = "0.16", default-features = false }
 
 leafwing_abilities_macros = { path = "macros", version = "0.3" }
 thiserror = "1.0.37"
 derive_more = "0.99.17"
 
 [dev-dependencies]
-bevy = { version = "0.14", default-features = false, features = [
-	"bevy_asset",
-	"bevy_sprite",
-	"bevy_text",
-	"bevy_ui",
-	"bevy_render",
-	"bevy_core_pipeline",
-	"x11",
+bevy = { version = "0.15", default-features = true, features = [
 	"default_font",
 ] }
 # Needed to provide implementations for standard input devices
-leafwing-input-manager = { version = "0.15", default-features = true }
+leafwing-input-manager = { version = "0.16", default-features = true }
