@@ -1,5 +1,16 @@
 # Release Notes
 
+## Version 0.11 (unreleased)
+
+## Bugs (0.11)
+
+- Fixed `CooldownState::trigger` triggering an ability cooldown when the global cooldown was not ready.
+
+### Usability (0.11)
+
+- `AbilityState`, `CooldownState`, and `ChargeState` now take a reference to an `AbilityLike` where possible.
+- Added an `OnGlobalCooldown` error variant to indicate whether `CooldownState::ready` or `CooldownState::trigger` failed due to the global cooldown or the abilities cooldown.
+
 ## Version 0.10
 
 ## Dependencies (0.10)

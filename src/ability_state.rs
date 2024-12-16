@@ -61,7 +61,7 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateItem<'_, A, P> {
     ///
     /// Calls [`Abilitylike::ready`] on the specified action.
     #[inline]
-    pub fn ready(&self, action: A) -> Result<(), CannotUseAbility> {
+    pub fn ready(&self, action: &A) -> Result<(), CannotUseAbility> {
         let maybe_pool = self.pool.as_deref();
         let maybe_ability_costs = self.ability_costs.as_deref();
 
@@ -77,8 +77,8 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateItem<'_, A, P> {
     ///
     /// The error value for "this ability is not pressed" will be prioritized over "this ability is not ready".
     #[inline]
-    pub fn ready_and_pressed(&self, action: A) -> Result<(), CannotUseAbility> {
-        if self.action_state.pressed(&action) {
+    pub fn ready_and_pressed(&self, action: &A) -> Result<(), CannotUseAbility> {
+        if self.action_state.pressed(action) {
             self.ready(action)?;
             Ok(())
         } else {
@@ -90,8 +90,8 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateItem<'_, A, P> {
     ///
     /// The error value for "this ability is not pressed" will be prioritized over "this ability is not ready".
     #[inline]
-    pub fn ready_and_just_pressed(&self, action: A) -> Result<(), CannotUseAbility> {
-        if self.action_state.just_pressed(&action) {
+    pub fn ready_and_just_pressed(&self, action: &A) -> Result<(), CannotUseAbility> {
+        if self.action_state.just_pressed(action) {
             self.ready(action)?;
             Ok(())
         } else {
@@ -103,7 +103,7 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateItem<'_, A, P> {
     ///
     /// Calls [`Abilitylike::trigger`] on the specified action.
     #[inline]
-    pub fn trigger(&mut self, action: A) -> Result<(), CannotUseAbility> {
+    pub fn trigger(&mut self, action: &A) -> Result<(), CannotUseAbility> {
         let maybe_pool = self.pool.as_deref_mut();
         let maybe_ability_costs = self.ability_costs.as_deref();
 
@@ -119,8 +119,8 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateItem<'_, A, P> {
     ///
     /// Calls [`Abilitylike::trigger`] on the specified action.
     #[inline]
-    pub fn trigger_if_pressed(&mut self, action: A) -> Result<(), CannotUseAbility> {
-        if self.action_state.just_pressed(&action) {
+    pub fn trigger_if_pressed(&mut self, action: &A) -> Result<(), CannotUseAbility> {
+        if self.action_state.just_pressed(action) {
             let maybe_pool = self.pool.as_deref_mut();
             let maybe_ability_costs = self.ability_costs.as_deref();
 
@@ -139,8 +139,8 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateItem<'_, A, P> {
     ///
     /// Calls [`Abilitylike::trigger`] on the specified action.
     #[inline]
-    pub fn trigger_if_just_pressed(&mut self, action: A) -> Result<(), CannotUseAbility> {
-        if self.action_state.just_pressed(&action) {
+    pub fn trigger_if_just_pressed(&mut self, action: &A) -> Result<(), CannotUseAbility> {
+        if self.action_state.just_pressed(action) {
             let maybe_pool = self.pool.as_deref_mut();
             let maybe_ability_costs = self.ability_costs.as_deref();
 
@@ -161,7 +161,7 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateReadOnlyItem<'_, A, P> {
     ///
     /// Calls [`Abilitylike::ready`] on the specified action.
     #[inline]
-    pub fn ready(&self, action: A) -> Result<(), CannotUseAbility> {
+    pub fn ready(&self, action: &A) -> Result<(), CannotUseAbility> {
         action.ready(self.charges, self.cooldowns, self.pool, self.ability_costs)
     }
 
@@ -169,8 +169,8 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateReadOnlyItem<'_, A, P> {
     ///
     /// The error value for "this ability is not pressed" will be prioritized over "this ability is not ready".
     #[inline]
-    pub fn ready_and_pressed(&self, action: A) -> Result<(), CannotUseAbility> {
-        if self.action_state.pressed(&action) {
+    pub fn ready_and_pressed(&self, action: &A) -> Result<(), CannotUseAbility> {
+        if self.action_state.pressed(action) {
             self.ready(action)?;
             Ok(())
         } else {
@@ -182,8 +182,8 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateReadOnlyItem<'_, A, P> {
     ///
     /// The error value for "this ability is not pressed" will be prioritized over "this ability is not ready".
     #[inline]
-    pub fn ready_and_just_pressed(&self, action: A) -> Result<(), CannotUseAbility> {
-        if self.action_state.just_pressed(&action) {
+    pub fn ready_and_just_pressed(&self, action: &A) -> Result<(), CannotUseAbility> {
+        if self.action_state.just_pressed(action) {
             self.ready(action)?;
             Ok(())
         } else {
@@ -209,7 +209,7 @@ mod tests {
     fn ability_state_methods_are_visible_from_query() {
         fn simple_system(mut query: Query<AbilityState<TestAction>>) {
             let mut ability_state = query.single_mut();
-            let _triggered = ability_state.trigger(TestAction::Duck);
+            let _triggered = ability_state.trigger(&TestAction::Duck);
         }
 
         let mut app = App::new();

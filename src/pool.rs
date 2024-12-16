@@ -195,7 +195,7 @@ impl<A: Abilitylike, P: Pool> AbilityCosts<A, P> {
     /// Returns `true` if the underlying resource is [`None`].
     #[inline]
     #[must_use]
-    pub fn available(&self, action: A, pool: &P) -> bool {
+    pub fn available(&self, action: &A, pool: &P) -> bool {
         if let Some(cost) = self.get(action) {
             pool.available(*cost).is_ok()
         } else {
@@ -212,7 +212,7 @@ impl<A: Abilitylike, P: Pool> AbilityCosts<A, P> {
     ///
     /// Returns [`Ok(())`] if the underlying [`Pool`] can support the cost of the action.
     #[inline]
-    pub fn pay_cost(&mut self, action: A, pool: &mut P) -> Result<(), CannotUseAbility> {
+    pub fn pay_cost(&mut self, action: &A, pool: &mut P) -> Result<(), CannotUseAbility> {
         if let Some(cost) = self.get(action) {
             pool.expend(*cost)
         } else {
@@ -223,15 +223,15 @@ impl<A: Abilitylike, P: Pool> AbilityCosts<A, P> {
     /// Returns a reference to the underlying [`Pool::Quantity`] cost for `action`, if set.
     #[inline]
     #[must_use]
-    pub fn get(&self, action: A) -> Option<&P::Quantity> {
-        self.cost_map.get(&action)
+    pub fn get(&self, action: &A) -> Option<&P::Quantity> {
+        self.cost_map.get(action)
     }
 
     /// Returns a mutable reference to the underlying [`Pool::Quantity`] cost for `action`, if set.
     #[inline]
     #[must_use]
-    pub fn get_mut(&mut self, action: A) -> Option<&mut P::Quantity> {
-        self.cost_map.get_mut(&action)
+    pub fn get_mut(&mut self, action: &A) -> Option<&mut P::Quantity> {
+        self.cost_map.get_mut(action)
     }
 
     /// Sets the underlying [`Pool::Quantity`] cost for `action` to the provided value.

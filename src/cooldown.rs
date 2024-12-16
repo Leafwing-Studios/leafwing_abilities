@@ -43,14 +43,14 @@ use std::{collections::HashMap, fmt::Display, marker::PhantomData};
 /// action_state.press(&Action::Jump);
 ///
 /// // This will only perform a limited check; consider using the `Abilitylike::ready` method instead
-/// if action_state.just_pressed(&Action::Jump) && cooldowns.ready(Action::Jump).is_ok() {
+/// if action_state.just_pressed(&Action::Jump) && cooldowns.ready(&Action::Jump).is_ok() {
 ///    // Actually do the jumping thing here
 ///    // Remember to actually begin the cooldown if you jumped!
-///    cooldowns.trigger(Action::Jump);
+///    cooldowns.trigger(&Action::Jump);
 /// }
 ///
 /// // We just jumped, so the cooldown isn't ready yet
-/// assert_eq!(cooldowns.ready(Action::Jump), Err(CannotUseAbility::OnCooldown));
+/// assert_eq!(cooldowns.ready(&Action::Jump), Err(CannotUseAbility::OnCooldown));
 /// ```
 #[derive(Resource, Component, Debug, Clone, PartialEq, Eq, Reflect)]
 pub struct CooldownState<A: Abilitylike> {
@@ -122,7 +122,10 @@ impl<A: Abilitylike> CooldownState<A> {
     /// or this can be used on its own,
     /// reading the returned [`Result`] to determine if the ability was used.
     #[inline]
-    pub fn trigger(&mut self, action: A) -> Result<(), CannotUseAbility> {
+    pub fn trigger(&mut self, action: &A) -> Result<(), CannotUseAbility> {
+        // Call `ready` here so that we don't trigger the actions cooldown when the GCD might fail
+        self.ready(action)?;
+
         if let Some(cooldown) = self.get_mut(action) {
             cooldown.trigger()?;
         }
@@ -139,14 +142,12 @@ impl<A: Abilitylike> CooldownState<A> {
     /// This will be `Ok` if the underlying [`Cooldown::ready`] call is true,
     /// or if no cooldown is stored for this action.
     #[inline]
-    pub fn ready(&self, action: A) -> Result<(), CannotUseAbility> {
-        self.gcd_ready()?;
-
+    pub fn ready(&self, action: &A) -> Result<(), CannotUseAbility> {
         if let Some(cooldown) = self.get(action) {
-            cooldown.ready()
-        } else {
-            Ok(())
+            cooldown.ready()?;
         }
+
+        self.gcd_ready()
     }
 
     /// Has the global cooldown for actions of type `A` expired?
@@ -155,7 +156,9 @@ impl<A: Abilitylike> CooldownState<A> {
     #[inline]
     pub fn gcd_ready(&self) -> Result<(), CannotUseAbility> {
         if let Some(global_cooldown) = self.global_cooldown.as_ref() {
-            global_cooldown.ready()
+            global_cooldown
+                .ready()
+                .map_err(|_| CannotUseAbility::OnGlobalCooldown)
         } else {
             Ok(())
         }
@@ -168,7 +171,7 @@ impl<A: Abilitylike> CooldownState<A> {
     pub fn tick(&mut self, delta_time: Duration, maybe_charges: Option<&mut ChargeState<A>>) {
         if let Some(charge_state) = maybe_charges {
             for (action, cooldown) in self.cooldown_map.iter_mut() {
-                let charges = charge_state.get_mut(action.clone());
+                let charges = charge_state.get_mut(action);
                 cooldown.tick(delta_time, charges);
             }
         } else {
@@ -185,15 +188,15 @@ impl<A: Abilitylike> CooldownState<A> {
     /// The cooldown associated with the specified `action`, if any.
     #[inline]
     #[must_use]
-    pub fn get(&self, action: A) -> Option<&Cooldown> {
-        self.cooldown_map.get(&action)
+    pub fn get(&self, action: &A) -> Option<&Cooldown> {
+        self.cooldown_map.get(action)
     }
 
     /// A mutable reference to the cooldown associated with the specified `action`, if any.
     #[inline]
     #[must_use]
-    pub fn get_mut(&mut self, action: A) -> Option<&mut Cooldown> {
-        self.cooldown_map.get_mut(&action)
+    pub fn get_mut(&mut self, action: &A) -> Option<&mut Cooldown> {
+        self.cooldown_map.get_mut(action)
     }
 
     /// Set a cooldown for the specified `action`.
@@ -460,10 +463,10 @@ mod tick_tests {
         let cooldown = Cooldown::new(Duration::from_millis(1000));
         let mut cloned_cooldown = cooldown.clone();
         let _ = cloned_cooldown.trigger();
-        assert!(cooldown != cloned_cooldown);
+        assert_ne!(cooldown, cloned_cooldown);
 
         cloned_cooldown.tick(Duration::from_millis(123), None);
-        assert!(cooldown != cloned_cooldown);
+        assert_ne!(cooldown, cloned_cooldown);
     }
 
     #[test]
