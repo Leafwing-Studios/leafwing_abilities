@@ -52,7 +52,7 @@ pub mod prelude {
 /// use leafwing_input_manager::Actionlike;
 /// use bevy::reflect::Reflect;
 ///
-/// #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Reflect)]
+/// #[derive(Actionlike, Debug, PartialEq, Eq, Clone, Copy, Hash, Reflect)]
 /// enum PlayerAction {
 ///    // Movement
 ///    Up,
@@ -82,16 +82,14 @@ pub trait Abilitylike: Actionlike {
         maybe_pool: Option<&P>,
         maybe_costs: Option<&AbilityCosts<Self, P>>,
     ) -> Result<(), CannotUseAbility> {
-        let charges = charges.get(self.clone());
-        let cooldown = cooldowns.get(self.clone());
+        let charges = charges.get(self);
+        let cooldown = cooldowns.get(self);
 
         ability_ready(
             charges,
             cooldown,
             maybe_pool,
-            maybe_costs
-                .and_then(|costs| costs.get(self.clone()))
-                .copied(),
+            maybe_costs.and_then(|costs| costs.get(self)).copied(),
         )
     }
 
@@ -108,16 +106,14 @@ pub trait Abilitylike: Actionlike {
         maybe_pool: Option<&mut P>,
         maybe_costs: Option<&AbilityCosts<Self, P>>,
     ) -> Result<(), CannotUseAbility> {
-        let charges = charges.get_mut(self.clone());
-        let cooldown = cooldowns.get_mut(self.clone());
+        let charges = charges.get_mut(self);
+        let cooldown = cooldowns.get_mut(self);
 
         trigger_ability(
             charges,
             cooldown,
             maybe_pool,
-            maybe_costs
-                .and_then(|costs| costs.get(self.clone()))
-                .copied(),
+            maybe_costs.and_then(|costs| costs.get(self)).copied(),
         )
     }
 
@@ -172,6 +168,9 @@ pub enum CannotUseAbility {
     /// The [`Cooldown`] of this ability was not ready
     #[error("Cooldown not ready.")]
     OnCooldown,
+    /// The Global [`Cooldown`] for this [`CooldownState`] was not ready
+    #[error("Global cooldown not ready.")]
+    OnGlobalCooldown,
     /// Not enough resources from the corresponding [`Pool`]s are available
     #[error("Not enough resources.")]
     PoolInsufficient,

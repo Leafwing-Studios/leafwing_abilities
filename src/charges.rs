@@ -21,7 +21,7 @@ use std::collections::HashMap;
 /// use leafwing_abilities::premade_pools::mana::{Mana, ManaPool};
 /// use leafwing_input_manager::Actionlike;
 ///
-/// #[derive(Actionlike, Abilitylike, Clone, Reflect, Hash, PartialEq, Eq)]
+/// #[derive(Actionlike, Abilitylike, Debug, Clone, Reflect, Hash, PartialEq, Eq)]
 /// enum Action {
 ///     // Neither cooldowns nor charges
 ///     Move,
@@ -163,7 +163,7 @@ impl<A: Abilitylike> ChargeState<A> {
     /// use leafwing_abilities::prelude::*;
     /// use leafwing_input_manager::Actionlike;
     ///
-    /// #[derive(Actionlike, Abilitylike, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
+    /// #[derive(Actionlike, Abilitylike, Debug, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
     /// enum Action {
     ///     Run,
     ///     Jump,
@@ -190,7 +190,7 @@ impl<A: Abilitylike> ChargeState<A> {
     /// Returns `true` if the underlying [`Charges`] is [`None`].
     #[inline]
     #[must_use]
-    pub fn available(&self, action: A) -> bool {
+    pub fn available(&self, action: &A) -> bool {
         if let Some(charges) = self.get(action) {
             charges.available()
         } else {
@@ -205,7 +205,7 @@ impl<A: Abilitylike> ChargeState<A> {
     ///
     /// Returns `true` if the underlying [`Charges`] is [`None`].
     #[inline]
-    pub fn expend(&mut self, action: A) -> Result<(), CannotUseAbility> {
+    pub fn expend(&mut self, action: &A) -> Result<(), CannotUseAbility> {
         if let Some(charges) = self.get_mut(action) {
             charges.expend()
         } else {
@@ -218,7 +218,7 @@ impl<A: Abilitylike> ChargeState<A> {
     /// The exact effect is determined by the [`Charges`]'s [`ReplenishStrategy`].
     /// If the `action` is not associated with a [`Charges`], this has no effect.
     #[inline]
-    pub fn replenish(&mut self, action: A) {
+    pub fn replenish(&mut self, action: &A) {
         if let Some(charges) = self.get_mut(action) {
             charges.replenish();
         }
@@ -227,15 +227,15 @@ impl<A: Abilitylike> ChargeState<A> {
     /// Returns a reference to the underlying [`Charges`] for `action`, if set.
     #[inline]
     #[must_use]
-    pub fn get(&self, action: A) -> Option<&Charges> {
-        self.charges_map.get(&action)
+    pub fn get(&self, action: &A) -> Option<&Charges> {
+        self.charges_map.get(action)
     }
 
     /// Returns a mutable reference to the underlying [`Charges`] for `action`, if set.
     #[inline]
     #[must_use]
-    pub fn get_mut(&mut self, action: A) -> Option<&mut Charges> {
-        self.charges_map.get_mut(&action)
+    pub fn get_mut(&mut self, action: &A) -> Option<&mut Charges> {
+        self.charges_map.get_mut(action)
     }
 
     /// Sets the underlying [`Charges`] for `action` to the provided value.
