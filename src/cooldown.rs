@@ -189,14 +189,14 @@ impl<A: Abilitylike> CooldownState<A> {
     #[inline]
     #[must_use]
     pub fn get(&self, action: &A) -> Option<&Cooldown> {
-        self.cooldown_map.get(&action)
+        self.cooldown_map.get(action)
     }
 
     /// A mutable reference to the cooldown associated with the specified `action`, if any.
     #[inline]
     #[must_use]
     pub fn get_mut(&mut self, action: &A) -> Option<&mut Cooldown> {
-        self.cooldown_map.get_mut(&action)
+        self.cooldown_map.get_mut(action)
     }
 
     /// Set a cooldown for the specified `action`.

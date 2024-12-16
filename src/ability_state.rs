@@ -91,7 +91,7 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateItem<'_, A, P> {
     /// The error value for "this ability is not pressed" will be prioritized over "this ability is not ready".
     #[inline]
     pub fn ready_and_just_pressed(&self, action: &A) -> Result<(), CannotUseAbility> {
-        if self.action_state.just_pressed(&action) {
+        if self.action_state.just_pressed(action) {
             self.ready(action)?;
             Ok(())
         } else {
