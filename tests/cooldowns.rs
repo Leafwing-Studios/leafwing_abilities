@@ -3,7 +3,7 @@
 
 use bevy::input::InputPlugin;
 use bevy::prelude::*;
-use bevy::utils::Duration;
+use core::time::Duration;
 use leafwing_abilities::prelude::*;
 use leafwing_input_manager::prelude::*;
 
@@ -65,7 +65,8 @@ fn cooldowns_on_entity() {
 
     // Cooldown start ready
     let mut query_state = app.world_mut().query::<&mut CooldownState<Action>>();
-    let mut cooldowns: Mut<CooldownState<Action>> = query_state.single_mut(app.world_mut());
+    let mut cooldowns: Mut<CooldownState<Action>> =
+        query_state.single_mut(app.world_mut()).unwrap();
     for action in Action::variants() {
         assert!(cooldowns.ready(&action).is_ok());
         // Trigger all the cooldowns once
@@ -76,7 +77,7 @@ fn cooldowns_on_entity() {
 
     // No waiting
     let mut query_state = app.world_mut().query::<&CooldownState<Action>>();
-    let cooldowns: &CooldownState<Action> = query_state.single(app.world());
+    let cooldowns: &CooldownState<Action> = query_state.single(app.world()).unwrap();
     assert!(cooldowns.ready(&NoCooldown).is_ok());
     assert_eq!(cooldowns.ready(&Short), Err(CannotUseAbility::OnCooldown));
     assert_eq!(cooldowns.ready(&Long), Err(CannotUseAbility::OnCooldown));
@@ -86,7 +87,7 @@ fn cooldowns_on_entity() {
 
     // Short wait
     let mut query_state = app.world_mut().query::<&CooldownState<Action>>();
-    let cooldowns: &CooldownState<Action> = query_state.single(&app.world());
+    let cooldowns: &CooldownState<Action> = query_state.single(&app.world()).unwrap();
     assert!(cooldowns.ready(&NoCooldown).is_ok());
     assert!(cooldowns.ready(&Short).is_ok());
     assert_eq!(cooldowns.ready(&Long), Err(CannotUseAbility::OnCooldown));

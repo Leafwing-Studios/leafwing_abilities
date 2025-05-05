@@ -36,7 +36,7 @@ pub fn tick_cooldowns<A: Abilitylike>(
 }
 
 /// Regenerates the resource of the [`Pool`] type `P` based on the elapsed [`Time`].
-pub fn regenerate_resource_pool<P: RegeneratingPool + Component + Resource>(
+pub fn regenerate_resource_pool<P: RegeneratingPool + Resource>(
     mut query: Query<&mut P>,
     pool_res: Option<ResMut<P>>,
     time: Res<Time>,
