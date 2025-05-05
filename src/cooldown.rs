@@ -5,7 +5,7 @@ use crate::{
     Abilitylike, CannotUseAbility,
 };
 
-use bevy::utils::Duration;
+use bevy::platform::Duration;
 use bevy::{
     ecs::prelude::{Component, Resource},
     reflect::Reflect,

@@ -9,9 +9,9 @@
 //!
 //! Remember to manually register these types for reflection with [`App::register_type`](bevy::app::App::register_type) if you wish to serialize or inspect them.
 
-use bevy::utils::Duration;
 use bevy::{ecs::prelude::*, reflect::Reflect};
 use core::ops::{Add, AddAssign, Sub, SubAssign};
+use core::time::Duration;
 use std::{collections::HashMap, marker::PhantomData};
 use thiserror::Error;
 
