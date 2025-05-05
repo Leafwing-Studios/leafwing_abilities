@@ -5,11 +5,11 @@ use crate::{
     Abilitylike, CannotUseAbility,
 };
 
-use bevy::utils::Duration;
 use bevy::{
     ecs::prelude::{Component, Resource},
     reflect::Reflect,
 };
+use core::time::Duration;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fmt::Display, marker::PhantomData};
 
@@ -238,7 +238,7 @@ impl<A: Abilitylike> CooldownState<A> {
 /// When initialized, cooldowns are always fully available.
 ///
 /// ```rust
-/// use bevy::utils::Duration;
+/// use core::time::Duration;
 /// use leafwing_abilities::cooldown::Cooldown;
 /// use leafwing_abilities::CannotUseAbility;
 ///

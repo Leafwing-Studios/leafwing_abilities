@@ -9,9 +9,10 @@
 //!
 //! Remember to manually register these types for reflection with [`App::register_type`](bevy::app::App::register_type) if you wish to serialize or inspect them.
 
-use bevy::utils::Duration;
+use bevy::ecs::component::Mutable;
 use bevy::{ecs::prelude::*, reflect::Reflect};
 use core::ops::{Add, AddAssign, Sub, SubAssign};
+use core::time::Duration;
 use std::{collections::HashMap, marker::PhantomData};
 use thiserror::Error;
 
@@ -28,7 +29,7 @@ use crate::{Abilitylike, CannotUseAbility};
 /// 2. The [`AbilityCosts`] component can be used to automatically check if an ability can be used.
 ///
 /// See [`RegeneratingPool`] for pools that regenerate over time.
-pub trait Pool: Sized {
+pub trait Pool: Sized + Component<Mutability = Mutable> {
     /// A type that tracks the quantity within a pool.
     ///
     /// Unlike a [`Pool`] type, which stores a max, min and regeneration,

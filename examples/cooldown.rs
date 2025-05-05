@@ -77,7 +77,7 @@ struct CookieBundle {
     node: Node,
     background_color: BackgroundColor,
     abilities_bundle: AbilitiesBundle<CookieAbility>,
-    input_manager_bundle: InputManagerBundle<CookieAbility>,
+    input_map: InputMap<CookieAbility>,
 }
 
 impl CookieBundle {
@@ -98,10 +98,7 @@ impl CookieBundle {
                 cooldowns: CookieAbility::cooldowns(),
                 ..default()
             },
-            input_manager_bundle: InputManagerBundle {
-                action_state: Default::default(),
-                input_map: CookieAbility::key_bindings(),
-            },
+            input_map: CookieAbility::key_bindings(),
         }
     }
 }
@@ -118,13 +115,15 @@ fn spawn_camera(mut commands: Commands) {
 #[derive(Resource, Default)]
 struct Score(u128);
 
-fn cookie_clicked(mut query: Query<(&Interaction, &mut ActionState<CookieAbility>)>) {
-    let (cookie_interaction, mut cookie_action_state) = query.single_mut();
+fn cookie_clicked(mut query: Query<(&Interaction, &mut ActionState<CookieAbility>)>) -> Result {
+    let (cookie_interaction, mut cookie_action_state) = query.single_mut()?;
     // This indirection is silly here, but works well in larger games
     // by allowing you to hook into the ability state.
     if *cookie_interaction == Interaction::Pressed {
         cookie_action_state.press(&CookieAbility::AddOne);
     }
+
+    Ok(())
 }
 
 fn handle_add_one_ability(
@@ -133,8 +132,8 @@ fn handle_add_one_ability(
         &mut CooldownState<CookieAbility>,
     )>,
     mut score: ResMut<Score>,
-) {
-    let (actions, mut cooldowns) = query.single_mut();
+) -> Result {
+    let (actions, mut cooldowns) = query.single_mut()?;
     // See the handle_double_cookies system for a more ergonomic, robust (and implicit) way to handle this pattern
     if actions.just_pressed(&CookieAbility::AddOne) {
         // Calling .trigger checks if the cooldown can be used, then triggers it if so
@@ -144,13 +143,15 @@ fn handle_add_one_ability(
             score.0 += 1;
         }
     }
+
+    Ok(())
 }
 
 fn handle_double_cookies_ability(
     mut query: Query<AbilityState<CookieAbility>>,
     mut score: ResMut<Score>,
-) {
-    let mut cookie_ability_state = query.single_mut();
+) -> Result {
+    let mut cookie_ability_state = query.single_mut()?;
     // Checks whether the action is pressed, and if it is ready.
     // If so, triggers the ability, resetting its cooldown.
     if cookie_ability_state
@@ -159,24 +160,29 @@ fn handle_double_cookies_ability(
     {
         score.0 *= 2;
     }
+
+    Ok(())
 }
 
 fn change_cookie_color_when_clicked(
     mut query: Query<(&mut BackgroundColor, AbilityState<CookieAbility>)>,
-) {
-    let (mut color, ability_state) = query.single_mut();
+) -> Result {
+    let (mut color, ability_state) = query.single_mut()?;
     if ability_state
         .ready_and_just_pressed(&CookieAbility::AddOne)
         .is_ok()
     {
         *color = CookieBundle::COOKIE_CLICKED_COLOR.into();
     }
+
+    Ok(())
 }
 
 /// Resets the cookie's color after a frame
-fn reset_cookie_color(mut query: Query<&mut BackgroundColor, With<Cookie>>) {
-    let mut color = query.single_mut();
+fn reset_cookie_color(mut query: Query<&mut BackgroundColor, With<Cookie>>) -> Result {
+    let mut color = query.single_mut()?;
     *color = CookieBundle::COOKIE_COLOR.into();
+    Ok(())
 }
 
 #[derive(Component)]

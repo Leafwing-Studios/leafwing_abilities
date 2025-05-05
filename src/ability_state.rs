@@ -9,7 +9,7 @@ use crate::{
 };
 // Required due to poor macro hygiene in `WorldQuery` macro
 // Tracked in https://github.com/bevyengine/bevy/issues/6593
-use bevy::{ecs::query::QueryData, prelude::Component};
+use bevy::{ecs::component::Component, ecs::query::QueryData};
 use leafwing_input_manager::action_state::ActionState;
 
 /// A custom [`WorldQuery`](bevy::ecs::query::WorldQuery) type that fetches all ability relevant data for you.
@@ -43,7 +43,7 @@ use leafwing_input_manager::action_state::ActionState;
 /// Make sure to check if the resource cost can be paid before calling [`Abilitylike::trigger`]!
 #[derive(QueryData)]
 #[query_data(mutable)]
-pub struct AbilityState<A: Abilitylike, P: Pool + Component = NullPool> {
+pub struct AbilityState<A: Abilitylike, P: Pool = NullPool> {
     /// The [`ActionState`] of the abilities of this entity of type `A`
     pub action_state: &'static ActionState<A>,
     /// The [`ChargeState`] associated with each action of type `A` for this entity
@@ -56,7 +56,7 @@ pub struct AbilityState<A: Abilitylike, P: Pool + Component = NullPool> {
     pub ability_costs: Option<&'static mut AbilityCosts<A, P>>,
 }
 
-impl<A: Abilitylike, P: Pool + Component> AbilityStateItem<'_, A, P> {
+impl<A: Abilitylike, P: Pool> AbilityStateItem<'_, A, P> {
     /// Is this ability ready?
     ///
     /// Calls [`Abilitylike::ready`] on the specified action.
@@ -156,7 +156,7 @@ impl<A: Abilitylike, P: Pool + Component> AbilityStateItem<'_, A, P> {
     }
 }
 
-impl<A: Abilitylike, P: Pool + Component> AbilityStateReadOnlyItem<'_, A, P> {
+impl<A: Abilitylike, P: Pool> AbilityStateReadOnlyItem<'_, A, P> {
     /// Is this ability ready?
     ///
     /// Calls [`Abilitylike::ready`] on the specified action.
@@ -208,7 +208,7 @@ mod tests {
     #[test]
     fn ability_state_methods_are_visible_from_query() {
         fn simple_system(mut query: Query<AbilityState<TestAction>>) {
-            let mut ability_state = query.single_mut();
+            let mut ability_state = query.single_mut().unwrap();
             let _triggered = ability_state.trigger(&TestAction::Duck);
         }
 
