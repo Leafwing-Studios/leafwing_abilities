@@ -1,6 +1,10 @@
 # Release Notes
 
-## Version 0.11 (unreleased)
+## Version 0.11
+
+## Dependencies (0.11)
+
+- now support `bevy` 0.16 and `leafwing-input-manager` 0.17
 
 ## Bugs (0.11)
 
@@ -10,6 +14,7 @@
 
 - `AbilityState`, `CooldownState`, and `ChargeState` now take a reference to an `AbilityLike` where possible.
 - Added an `OnGlobalCooldown` error variant to indicate whether `CooldownState::ready` or `CooldownState::trigger` failed due to the global cooldown or the abilities cooldown.
+- the `Pool` trait now requires the `Component` trait to simplify trait bounds, especially with the addition of immutable components
 
 ## Version 0.10
 
