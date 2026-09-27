@@ -20,7 +20,7 @@ use crate::{Abilitylike, CannotUseAbility};
 
 /// A reservoir of a resource that can be used to pay for abilities, or keep track of character state.
 ///
-/// Each type that implements this trait should be stored on a component (or, if your actions are globally unique, a resource),
+/// Each type that implements this trait should be stored on a component,
 /// and contains information about the current and max values.
 ///
 /// There are two core benefits to using pools, rather than creating your own solutions:
@@ -151,7 +151,7 @@ pub trait RegeneratingPool: Pool {
 pub struct MaxPoolLessThanMin;
 
 /// Stores the cost (in terms of the [`Pool::Quantity`] of ability) associated with each ability of type `A`.
-#[derive(Component, Resource, Debug, Reflect)]
+#[derive(Component, Debug, Reflect)]
 pub struct AbilityCosts<A: Abilitylike, P: Pool> {
     /// The underlying cost of each ability.
     cost_map: HashMap<A, P::Quantity>,

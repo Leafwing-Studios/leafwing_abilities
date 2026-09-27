@@ -5,10 +5,7 @@ use crate::{
     Abilitylike, CannotUseAbility,
 };
 
-use bevy::{
-    ecs::prelude::{Component, Resource},
-    reflect::Reflect,
-};
+use bevy::{ecs::prelude::Component, reflect::Reflect};
 use core::time::Duration;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fmt::Display, marker::PhantomData};
@@ -22,12 +19,12 @@ use std::{collections::HashMap, fmt::Display, marker::PhantomData};
 /// if the action state is just-pressed (or another triggering condition is met),
 /// and the cooldown is ready, then perform the action and trigger the cooldown.
 ///
-/// This type is included as part of the [`InputManagerBundle`](crate::InputManagerBundle),
-/// but can also be used as a resource for singleton game objects.
+/// This type is included as part of the [`AbilitiesBundle`](crate::AbilitiesBundle),
+/// but can also be used on its own for singleton game objects.
 ///
 ///     
 /// ```rust
-/// use bevy::{utils::Duration, reflect::Reflect};
+/// use bevy::reflect::Reflect;
 /// use leafwing_abilities::prelude::*;
 /// use leafwing_input_manager::prelude::*;
 ///
@@ -52,7 +49,7 @@ use std::{collections::HashMap, fmt::Display, marker::PhantomData};
 /// // We just jumped, so the cooldown isn't ready yet
 /// assert_eq!(cooldowns.ready(&Action::Jump), Err(CannotUseAbility::OnCooldown));
 /// ```
-#[derive(Resource, Component, Debug, Clone, PartialEq, Eq, Reflect)]
+#[derive(Component, Debug, Clone, PartialEq, Eq, Reflect)]
 pub struct CooldownState<A: Abilitylike> {
     /// The [`Cooldown`] of each action
     ///
@@ -175,7 +172,7 @@ impl<A: Abilitylike> CooldownState<A> {
                 cooldown.tick(delta_time, charges);
             }
         } else {
-            for (_, cooldown) in self.cooldown_map.iter_mut() {
+            for cooldown in self.cooldown_map.values_mut() {
                 cooldown.tick(delta_time, None);
             }
         }

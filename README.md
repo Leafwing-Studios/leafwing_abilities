@@ -95,7 +95,7 @@ struct Zyra;
 struct ZyraBundle {
     champion: Zyra,
     life_pool: LifePool,
-    input_manager_bundle: InputManagerBundle<ZyraAbility>,
+    input_map: InputMap<ZyraAbility>,
     abilities_bundle: AbilitiesBundle<ZyraAbility>,
     mana_bundle: PoolBundle<ZyraAbility, ManaPool>,
 }
@@ -106,10 +106,7 @@ impl Default for ZyraBundle {
             champion: Zyra,
             // Max life, then regen
             life_pool: LifePool::new(Life(574.), Life(574.), (Life(5.5))),
-            input_manager_bundle: InputManagerBundle::<ZyraAbility> {
-                input_map: ZyraAbility::input_map(),
-                ..default()
-            },
+            input_map: ZyraAbility::input_map(),
             abilities_bundle: AbilitiesBundle::<ZyraAbility> {
                 cooldowns: ZyraAbility::cooldowns(),
                 charges: ZyraAbility::charges(),
