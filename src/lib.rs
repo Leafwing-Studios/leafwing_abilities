@@ -40,7 +40,7 @@ pub mod prelude {
 /// Actions are modelled as "virtual buttons", cleanly abstracting over messy, customizable inputs
 /// in a way that can be easily consumed by your game logic.
 ///
-/// This trait should be implemented on the `A` type that you want to pass into [`InputManagerPlugin`](crate::plugin::InputManagerPlugin).
+/// This trait should be implemented on the `A` type that you want to pass into [`AbilityPlugin`](crate::plugin::AbilityPlugin).
 ///
 /// Generally, these types will be very small (often data-less) enums.
 /// As a result, the APIs in this crate accept actions by value, rather than reference.
@@ -72,7 +72,7 @@ pub trait Abilitylike: Actionlike {
     ///
     /// If this ability has charges, at least one charge must be available.
     /// If this ability has a cooldown but no charges, the cooldown must be ready.
-    /// Otherwise, returns [`Ok(())`].
+    /// Otherwise, returns `Ok(())`.
     ///
     /// Calls [`ability_ready`], which can be used manually if you already know the [`Charges`] and [`Cooldown`] of interest.
     fn ready<P: Pool>(
@@ -137,7 +137,7 @@ pub trait Abilitylike: Actionlike {
     ///
     /// If this ability has charges, at least one charge must be available.
     /// If this ability has a cooldown but no charges, the cooldown must be ready.
-    /// Otherwise, returns [`Ok(())`].
+    /// Otherwise, returns `Ok(())`.
     ///
     /// Calls [`Abilitylike::ready`], passing in [`None`] for both the pools or costs.
     /// This is useful when you don't have any pools or costs to check,
@@ -253,8 +253,9 @@ pub fn trigger_ability<P: Pool>(
 
 /// This [`Bundle`] allows entities to manage their [`Abilitylike`] actions effectively.
 ///
-/// Commonly combined with an [`InputManagerBundle`](leafwing_input_manager::InputManagerBundle),
-/// which tracks whether or not actions are pressed.
+/// Commonly combined with an [`InputMap`](leafwing_input_manager::input_map::InputMap) and an
+/// [`ActionState`](leafwing_input_manager::action_state::ActionState),
+/// which track whether or not actions are pressed.
 ///
 /// If you would like to track resource costs for your abilities, combine this with a [`PoolBundle`](crate::pool::PoolBundle).
 ///

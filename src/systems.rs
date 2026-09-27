@@ -1,4 +1,4 @@
-//! The systems that power each [`InputManagerPlugin`](crate::plugin::InputManagerPlugin).
+//! The systems that power each [`AbilityPlugin`](crate::plugin::AbilityPlugin).
 
 use crate::pool::RegeneratingPool;
 use crate::{charges::ChargeState, cooldown::CooldownState, Abilitylike};

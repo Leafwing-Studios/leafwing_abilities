@@ -99,8 +99,8 @@ impl<A: Abilitylike> Default for ChargeState<A> {
 
 /// Stores how many times an action can be used.
 ///
-/// Charges refresh when [`Charges::refresh`] is called manually,
-/// or when the corresponding cooldown expires (if the [`InputManagerPlugin`](crate::plugin::InputManagerPlugin) is added).
+/// Charges refresh when [`Charges::replenish`] is called manually,
+/// or when the corresponding cooldown expires (if the [`AbilityPlugin`](crate::plugin::AbilityPlugin) is added).
 #[derive(Clone, Default, PartialEq, Eq, Debug, Reflect)]
 pub struct Charges {
     current: u8,
