@@ -20,7 +20,7 @@ use crate::{Abilitylike, CannotUseAbility};
 
 /// A reservoir of a resource that can be used to pay for abilities, or keep track of character state.
 ///
-/// Each type that implements this trait should be stored on a component (or, if your actions are globally unique, a resource),
+/// Each type that implements this trait should be stored on a component,
 /// and contains information about the current and max values.
 ///
 /// There are two core benefits to using pools, rather than creating your own solutions:
@@ -102,7 +102,7 @@ pub trait Pool: Sized + Component<Mutability = Mutable> {
 
     /// Spend the specified amount from the pool, if there is that much available.
     ///
-    /// Otherwise, return the error [`CannotUseAbility::PoolEmpty`].
+    /// Otherwise, return the error [`CannotUseAbility::PoolInsufficient`].
     fn expend(&mut self, amount: Self::Quantity) -> Result<(), CannotUseAbility> {
         self.available(amount)?;
 
@@ -151,7 +151,7 @@ pub trait RegeneratingPool: Pool {
 pub struct MaxPoolLessThanMin;
 
 /// Stores the cost (in terms of the [`Pool::Quantity`] of ability) associated with each ability of type `A`.
-#[derive(Component, Resource, Debug, Reflect)]
+#[derive(Component, Debug, Reflect)]
 pub struct AbilityCosts<A: Abilitylike, P: Pool> {
     /// The underlying cost of each ability.
     cost_map: HashMap<A, P::Quantity>,
@@ -209,9 +209,9 @@ impl<A: Abilitylike, P: Pool> AbilityCosts<A, P> {
     /// The cost of the action is expended from the [`Pool`].
     ///
     /// If the underlying pool does not have enough resources to pay the action's cost,
-    /// a [`CannotUseAbility::PoolEmpty`] error is returned and this call has no effect.
+    /// a [`CannotUseAbility::PoolInsufficient`] error is returned and this call has no effect.
     ///
-    /// Returns [`Ok(())`] if the underlying [`Pool`] can support the cost of the action.
+    /// Returns `Ok(())` if the underlying [`Pool`] can support the cost of the action.
     #[inline]
     pub fn pay_cost(&mut self, action: &A, pool: &mut P) -> Result<(), CannotUseAbility> {
         if let Some(cost) = self.get(action) {
@@ -253,13 +253,13 @@ impl<A: Abilitylike, P: Pool> AbilityCosts<A, P> {
         self.clone()
     }
 
-    /// Returns an iterator of references to the underlying non-[`None`] [`Charges`]
+    /// Returns an iterator of references to the underlying costs.
     #[inline]
     pub fn iter(&self) -> impl Iterator<Item = &P::Quantity> {
         self.cost_map.values()
     }
 
-    /// Returns an iterator of mutable references to the underlying non-[`None`] [`Charges`]
+    /// Returns an iterator of mutable references to the underlying costs.
     #[inline]
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut P::Quantity> {
         self.cost_map.values_mut()

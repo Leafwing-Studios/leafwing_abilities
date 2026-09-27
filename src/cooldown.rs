@@ -5,10 +5,7 @@ use crate::{
     Abilitylike, CannotUseAbility,
 };
 
-use bevy::{
-    ecs::prelude::{Component, Resource},
-    reflect::Reflect,
-};
+use bevy::{ecs::prelude::Component, reflect::Reflect};
 use core::time::Duration;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fmt::Display, marker::PhantomData};
@@ -18,16 +15,16 @@ use std::{collections::HashMap, fmt::Display, marker::PhantomData};
 /// Each action may be associated with a [`Cooldown`].
 /// If it is not, it always be treated as being ready.
 ///
-/// This is typically paired with an [`ActionState`](crate::action_state::ActionState):
+/// This is typically paired with an [`ActionState`](leafwing_input_manager::action_state::ActionState):
 /// if the action state is just-pressed (or another triggering condition is met),
 /// and the cooldown is ready, then perform the action and trigger the cooldown.
 ///
-/// This type is included as part of the [`InputManagerBundle`](crate::InputManagerBundle),
-/// but can also be used as a resource for singleton game objects.
+/// This type is included as part of the [`AbilitiesBundle`](crate::AbilitiesBundle),
+/// but can also be used on its own for singleton game objects.
 ///
 ///     
 /// ```rust
-/// use bevy::{utils::Duration, reflect::Reflect};
+/// use bevy::reflect::Reflect;
 /// use leafwing_abilities::prelude::*;
 /// use leafwing_input_manager::prelude::*;
 ///
@@ -52,7 +49,7 @@ use std::{collections::HashMap, fmt::Display, marker::PhantomData};
 /// // We just jumped, so the cooldown isn't ready yet
 /// assert_eq!(cooldowns.ready(&Action::Jump), Err(CannotUseAbility::OnCooldown));
 /// ```
-#[derive(Resource, Component, Debug, Clone, PartialEq, Eq, Reflect)]
+#[derive(Component, Debug, Clone, PartialEq, Eq, Reflect)]
 pub struct CooldownState<A: Abilitylike> {
     /// The [`Cooldown`] of each action
     ///
@@ -117,7 +114,7 @@ impl<A: Abilitylike> CooldownState<A> {
 
     /// Triggers the cooldown of the `action` if it is available to be used.
     ///
-    /// This can be paired with [`Cooldowns::ready`],
+    /// This can be paired with [`CooldownState::ready`],
     /// to check if the action can be used before triggering its cooldown,
     /// or this can be used on its own,
     /// reading the returned [`Result`] to determine if the ability was used.
@@ -175,7 +172,7 @@ impl<A: Abilitylike> CooldownState<A> {
                 cooldown.tick(delta_time, charges);
             }
         } else {
-            for (_, cooldown) in self.cooldown_map.iter_mut() {
+            for cooldown in self.cooldown_map.values_mut() {
                 cooldown.tick(delta_time, None);
             }
         }
@@ -232,7 +229,7 @@ impl<A: Abilitylike> CooldownState<A> {
 
 /// A timer-like struct that records the amount of time until an action is available to be used again.
 ///
-/// Cooldowns are typically stored in an [`ActionState`](crate::action_state::ActionState), associated with an action that is to be
+/// Cooldowns are typically stored in an [`ActionState`](leafwing_input_manager::action_state::ActionState), associated with an action that is to be
 /// cooldown-regulated.
 ///
 /// When initialized, cooldowns are always fully available.
@@ -261,7 +258,7 @@ impl<A: Abilitylike> CooldownState<A> {
 #[derive(Clone, Default, PartialEq, Eq, Debug, Serialize, Deserialize, Reflect)]
 pub struct Cooldown {
     max_time: Duration,
-    /// The amount of time that has elapsed since all [`Charges`](crate::charges::Charges) were fully replenished.
+    /// The amount of time that has elapsed since all [`Charges`] were fully replenished.
     elapsed_time: Duration,
 }
 
@@ -271,7 +268,7 @@ impl Cooldown {
     /// # Panics
     ///
     /// The provided max time cannot be [`Duration::ZERO`].
-    /// Instead, use [`None`] in the [`Cooldowns`] struct for an action without a cooldown.
+    /// Instead, use [`None`] in the [`CooldownState`] struct for an action without a cooldown.
     pub fn new(max_time: Duration) -> Cooldown {
         assert!(max_time != Duration::ZERO);
 
@@ -333,7 +330,7 @@ impl Cooldown {
     /// Is this action ready to be used?
     ///
     /// This will be true if and only if at least one charge is available.
-    /// For cooldowns without charges, this will be true if `time_remaining` is [`Duration::Zero`].
+    /// For cooldowns without charges, this will be true if `time_remaining` is [`Duration::ZERO`].
     pub fn ready(&self) -> Result<(), CannotUseAbility> {
         match self.elapsed_time >= self.max_time {
             true => Ok(()),
@@ -376,7 +373,7 @@ impl Cooldown {
     /// # Panics
     ///
     /// The provided max time cannot be [`Duration::ZERO`].
-    /// Instead, use [`None`] in the [`Cooldowns`] struct for an action without a cooldown.
+    /// Instead, use [`None`] in the [`CooldownState`] struct for an action without a cooldown.
     #[inline]
     pub fn set_max_time(&mut self, max_time: Duration) {
         assert!(max_time != Duration::ZERO);

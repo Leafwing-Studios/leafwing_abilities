@@ -4,7 +4,7 @@
 //! so feel free to copy-paste them (without attribution) into your own source to make new variants.
 
 use crate::pool::{MaxPoolLessThanMin, Pool};
-use bevy::prelude::{Component, Resource};
+use bevy::prelude::Component;
 use core::fmt::{Display, Formatter};
 use core::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
 use derive_more::{Add, AddAssign, Sub, SubAssign};
@@ -21,7 +21,7 @@ pub mod life {
     /// If they lose it all, they die or pass out.
     ///
     /// This is intended to be stored as a component on each entity.
-    #[derive(Debug, Clone, PartialEq, Component, Resource, Reflect)]
+    #[derive(Debug, Clone, PartialEq, Component, Reflect)]
     pub struct LifePool {
         /// The current life.
         current: Life,
@@ -187,7 +187,7 @@ pub mod mana {
     /// Units must spend mana to cast spells according to their [`AbilityCosts<A, Mana>`](crate::pool::AbilityCosts) component.
     ///
     /// This is intended to be stored as a component on each entity.
-    #[derive(Debug, Clone, PartialEq, Component, Resource, Reflect)]
+    #[derive(Debug, Clone, PartialEq, Component, Reflect)]
     pub struct ManaPool {
         /// The current mana.
         current: Mana,

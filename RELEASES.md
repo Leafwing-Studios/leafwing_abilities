@@ -1,5 +1,22 @@
 # Release Notes
 
+## Version 0.13
+
+## Dependencies (0.13)
+
+- now support `bevy` 0.19 and `leafwing-input-manager` 0.21
+
+## Breaking Changes (0.13)
+
+- `CooldownState`, `ChargeState`, `AbilityCosts`, `LifePool` and `ManaPool` can no longer be used as resources: they are components only. This is a consequence of Bevy 0.19's resources-as-components change, which broke the previous resource-or-component pattern (resource *and* component) usage.
+  - `systems::tick_cooldowns` and `systems::regenerate_resource_pool` no longer read these types from resources: spawn the relevant components on an entity instead.
+
+## Version 0.12
+
+## Dependencies (0.12)
+
+- now support `bevy` 0.18 and `leafwing-input-manager` 0.20
+
 ## Version 0.11
 
 ## Dependencies (0.11)

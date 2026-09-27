@@ -2,16 +2,13 @@
 //! Actions may only be used if at least one charge is available.
 //! Unlike pools, charges are not shared across abilities.
 
-use bevy::{
-    ecs::prelude::{Component, Resource},
-    reflect::Reflect,
-};
+use bevy::{ecs::prelude::Component, reflect::Reflect};
 use std::{fmt::Display, marker::PhantomData};
 
 use crate::{Abilitylike, CannotUseAbility};
 use std::collections::HashMap;
 
-/// A component / resource that stores the [`Charges`] for each [`Abilitylike`] action of type `A`.
+/// A component that stores the [`Charges`] for each [`Abilitylike`] action of type `A`.
 ///
 /// If [`Charges`] is set for an actions, it is only [`Abilitylike::ready`] when at least one charge is available.
 ///
@@ -83,7 +80,7 @@ use std::collections::HashMap;
 ///     Action::Spell.trigger(&mut abilities_bundle.charges, &mut abilities_bundle.cooldowns, Some(&mut mana_bundle.pool), Some(&mut mana_bundle.ability_costs));
 /// }
 /// ```
-#[derive(Resource, Component, Clone, PartialEq, Eq, Debug, Reflect)]
+#[derive(Component, Clone, PartialEq, Eq, Debug, Reflect)]
 pub struct ChargeState<A: Abilitylike> {
     /// The underlying [`Charges`].
     charges_map: HashMap<A, Charges>,
@@ -102,8 +99,8 @@ impl<A: Abilitylike> Default for ChargeState<A> {
 
 /// Stores how many times an action can be used.
 ///
-/// Charges refresh when [`Charges::refresh`] is called manually,
-/// or when the corresponding cooldown expires (if the [`InputManagerPlugin`](crate::plugin::InputManagerPlugin) is added).
+/// Charges refresh when [`Charges::replenish`] is called manually,
+/// or when the corresponding cooldown expires (if the [`AbilityPlugin`](crate::plugin::AbilityPlugin) is added).
 #[derive(Clone, Default, PartialEq, Eq, Debug, Reflect)]
 pub struct Charges {
     current: u8,
